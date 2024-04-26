@@ -282,7 +282,7 @@ namespace ClipMenu
             string value = (string)key.GetValue("UninstallString");
             if (value == null) return false;
             else if (Debugger.IsAttached) { return true; } // run by Visual Studio
-            else { return assemblyLocation.Equals(RemoveFromEnd(value.Trim('"'), "\\unins000.exe")); } // "C:\Program Files\NetRadio\unins000.exe"
+            else { return assemblyLocation.Equals(RemoveFromEnd(value.Trim('"'), "\\unins000.exe")); } // "C:\Program Files\ClipMenu\unins000.exe"
         }
 
         private static string RemoveFromEnd(string str, string toRemove) { return str.EndsWith(toRemove) ? str[..^toRemove.Length] : str; }
