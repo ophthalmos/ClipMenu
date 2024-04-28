@@ -6,9 +6,7 @@ using System.Drawing.Imaging;
 using System.Globalization;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Xml;
 using System.Xml.Linq;
 
 namespace ClipMenu
@@ -17,7 +15,7 @@ namespace ClipMenu
     {
         internal static void HelpMsgTaskDlg(IntPtr hwnd, Icon icon)
         {
-            string foot = "              © " + GetBuildDate(Assembly.GetExecutingAssembly()).ToString("yyyy") + " Wilhelm Happe";
+        string foot = "              © " + GetBuildDate().ToString("yyyy") + " Wilhelm Happe, Version " + Assembly.GetExecutingAssembly().GetName().Version.ToString();
             string msg = "Tastenkombinationen:" + Environment.NewLine +
                 "¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯" + Environment.NewLine +
                 "Strg+Win+V:        Anzeigen des Programmfensters" + Environment.NewLine +
@@ -342,10 +340,10 @@ namespace ClipMenu
             }.Start();
         }
 
-        internal static DateTime GetBuildDate(Assembly assembly)
+        internal static DateTime GetBuildDate()
         { //s. <SourceRevisionId>build$([System.DateTime]::UtcNow.ToString("yyyyMMddHHmmss"))</SourceRevisionId> in ClipMenu.csproj
             const string BuildVersionMetadataPrefix = "+build";
-            AssemblyInformationalVersionAttribute attribute = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>();
+            AssemblyInformationalVersionAttribute attribute = Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>();
             if (attribute?.InformationalVersion != null)
             {
                 string value = attribute.InformationalVersion;

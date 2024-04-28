@@ -97,9 +97,7 @@ namespace ClipMenu
                 }
                 else
                 {
-                    if (NativeMethods.hwndList.Count > 0) { NativeMethods.SetForegroundWindow(NativeMethods.hwndList[0]); }
-                    else { NativeMethods.ActivateForegroundWindow(Handle); }
-                    NativeMethods.SendKeysPaste(); //SendKeys.SendWait("^(v)");
+                    if (NativeMethods.SetForegroundWindow(NativeMethods.lastActiveWindow)) { NativeMethods.SendKeysPaste(); } //SendKeys.SendWait("^(v)");
                     Close();
                 }
             }
@@ -123,7 +121,7 @@ namespace ClipMenu
 
         private void AboutToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            string text = "© " + Utilities.GetBuildDate(Assembly.GetExecutingAssembly()).ToString("yyyy") + " Wilhelm Happe";
+            string text = "© " + Utilities.GetBuildDate().ToString("yyyy") + " Wilhelm Happe";
             TaskDialogIcon taskDialogIcon = new TaskDialogIcon(Icon);
             TaskDialog.ShowDialog(Handle, new TaskDialogPage() { Caption = Application.ProductName, SizeToContent = true, Text = text, Icon = taskDialogIcon, AllowCancel = true, Buttons = { TaskDialogButton.OK } });
         }

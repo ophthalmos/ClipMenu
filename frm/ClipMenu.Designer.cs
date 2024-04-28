@@ -729,7 +729,6 @@
             notifyIcon.Icon = (Icon)resources.GetObject("notifyIcon.Icon");
             notifyIcon.Text = "ClipMenu";
             notifyIcon.Visible = true;
-            notifyIcon.Click += NotifyIcon_Click;
             notifyIcon.MouseClick += NotifyIcon_MouseClick;
             // 
             // trayMenuStrip

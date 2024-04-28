@@ -14,8 +14,6 @@ namespace ClipMenu
         private double res1 = 0.0;
         private readonly CalcClass calcInstance = new();
         private bool shownTaskDialog = false;
-        //string resultToClipboard = string.Empty;
-        //string resultFromClipboard = string.Empty;
 
         public FrmClipCalc(string clipString, int decPlaces)
         {
@@ -92,7 +90,7 @@ namespace ClipMenu
             {
                 shownTaskDialog = true;
 
-                string foot = "© " + Utilities.GetBuildDate(Assembly.GetExecutingAssembly()).ToString("yyyy") + " W. Happe, Mathematics by Zaur Nasibov 2008";
+                string foot = "© " + Utilities.GetBuildDate().ToString("yyyy") + " W. Happe, Mathematics by Zaur Nasibov 2008";
                 string msg = "Drücken Sie die Taste \"b\", um den letzten Rechenschritt anzuzeigen (back) und \"Enter\" um die Berechnung auzulösen oder das Ergebnis einzufügen." + Environment.NewLine +
                     "Bei Bedarf können Klammern sowie die Konstanten \"pi\" und \"e\" verwendet werden.";
                 TaskDialog.ShowDialog(Handle, new TaskDialogPage() { Caption = Text, Text = msg, AllowCancel = true, Buttons = { TaskDialogButton.OK }, Footnote = foot });
@@ -118,7 +116,6 @@ namespace ClipMenu
                 res1 = calcInstance.Evaluate(tbDisplay.Text); // die Berechnung des Formelausdrucks!
                 if (trackBar.Value >= 0) { tbDisplay.Text = Math.Round(res1, trackBar.Value).ToString(); }
                 else { tbDisplay.Text = res1.ToString(); }
-                //resultToClipboard = tbDisplay.Text; // SetClipboardText(tbDisplay.Text);
                 if (tbDisplay.Text != res1.ToString())
                 {// commented code for multiline textbox - not yet implemented!
                     //tbDisplay.Text = tbDisplay.Text.Remove(tbDisplay.GetFirstCharIndexFromLine(tbDisplay.Lines.Length - 1), lastString.Length); // letzte Zeile löschen
@@ -223,7 +220,6 @@ namespace ClipMenu
                 if (resultIsDisplayed)
                 {
                     tbDisplay.Text = Math.Round(res1, trackBar.Value).ToString();
-                    //resultToClipboard = tbDisplay.Text; // SetClipboardText(tbDisplay.Text);
                     if (tbDisplay.Text != res1.ToString()) { tbDisplay.Text = "~" + tbDisplay.Text; };
                 }
             }
@@ -233,7 +229,6 @@ namespace ClipMenu
                 if (resultIsDisplayed)
                 {
                     tbDisplay.Text = res1.ToString();
-                    //resultToClipboard = tbDisplay.Text; // SetClipboardText(tbDisplay.Text);
                 }
             }
             tbDisplay.Focus();
@@ -258,9 +253,7 @@ namespace ClipMenu
                 }
                 else
                 {
-                    if (NativeMethods.hwndList.Count > 0) { NativeMethods.SetForegroundWindow(NativeMethods.hwndList[0]); }
-                    else { NativeMethods.ActivateForegroundWindow(Handle); }
-                    NativeMethods.SendKeysPaste();
+                    if (NativeMethods.SetForegroundWindow(NativeMethods.lastActiveWindow)) { NativeMethods.SendKeysPaste(); }
                 }
             }
             catch (Exception ex) when (ex is NullReferenceException) { }

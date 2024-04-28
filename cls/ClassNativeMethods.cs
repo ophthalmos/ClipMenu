@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -6,74 +7,32 @@ namespace ClipMenu
 {
     internal static class NativeMethods
     {
-        //public static FrmClipEdit _clipEditForm;
-
-        //private static FrmClipMenu _mainForm;
-
         internal const int EC_LEFTMARGIN = 0x1;
         internal const int EM_SETMARGINS = 0xD3;
-
-        //internal const int WM_HOTKEY = 0x312;
         internal const int WM_CLIPBOARDUPDATE = 0x031D;
-        //internal const int HOTKEY_ID1 = 1;
-        //internal const int HOTKEY_ID2 = 2;
-        private const int GWL_EXSTYLE = -20;
-        private const int GWL_STYLE = -16;
-        private const int GW_OWNER = 4;
-        private const uint WS_EX_TOOLWINDOW = 0x00000080;
-        private const uint WS_EX_APPWINDOW = 0x40000; // provides a taskbar button for a window that would otherwise lack one
-        //private const uint WS_EX_TOPMOST = 0x00000008;
-        private const int DWMWA_CLOAKED = 14;
-
-        private const int WS_OVERLAPPEDWINDOW = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX;
-        private const int WS_OVERLAPPED = 0x00000000;
-        private const int WS_CAPTION = 0x00C00000;
-        private const int WS_SYSMENU = 0x00080000;
-        private const int WS_THICKFRAME = 0x00040000;
-        private const int WS_MINIMIZEBOX = 0x00020000;
-        private const int WS_MAXIMIZEBOX = 0x00010000;
-
-        //internal const int HWND_BROADCAST = 0xffff;
-        //private const int WM_COPY = 0x0301;
-        //private const int WM_PASTE = 0x0302;
         private const int WM_KEYDOWN = 0x0100; // 256
-        //private const int WM_KEYUP = 0x0101;
-        //private const int VK_CONTROL = 0x11;
-        //private const int VK_C = 0x43;
         internal const int VK_LCONTROL = 0xA2;
         internal const int VK_LSHIFT = 0xA0; //	Linke UMSCHALTTASTE
-        //internal const int VK_CONTROL = 0x11; // STRG-Taste
         internal const int VK_LWIN = 0x5B;
-        //private const int VK_XBUTTON1 = 0x05;
-        private const int XBUTTON1 = 0x0001;
         private const int WM_XBUTTONDOWN = 0x20B;
         private const int WM_XBUTTONUP = 0x020C;
         private const int HC_ACTION = 0;
-        //private const int GW_HWNDPREV = 3;
-        internal const int WM_NCACTIVATE = 0x0086;
+        //internal const int WM_NCACTIVATE = 0x0086;
 
         private const int WH_KEYBOARD_LL = 13;
         private const int WH_MOUSE_LL = 14;
         private static IntPtr _hookIDKeyboard = IntPtr.Zero;
         private static IntPtr _hookIDMouse = IntPtr.Zero;
-        internal const int WM_USER = 0x400;
-        internal const uint KEYEVENTF_KEYDOWN = 0x0000;
-        internal const uint KEYEVENTF_KEYUP = 0x0002;
-        internal const uint KEYEVENTF_EXTENDEDKEY = 0x0001;
 
-        internal const uint EVENT_SYSTEM_FOREGROUND = 3;
+        internal const uint EVENT_SYSTEM_FOREGROUND = 0x0003;
         internal const uint WINEVENT_OUTOFCONTEXT = 0;
         internal const int WINEVENT_SKIPOWNPROCESS = 2;
+        internal const int EVENT_SYSTEM_MINIMIZEEND = 0x0017;
 
         internal const int WM_HOTKEY = 0x312;
         internal const int HOTKEY_ID = 0x0312; // 0; // 42;
 
-
-        internal delegate bool EnumWindowsCallback(IntPtr hWnd, IntPtr lParam); // stimmt mit 2x IntPtr
-        internal static ArrayList windowHandles = [];
-
-        internal static readonly List<IntPtr> hwndList = new(3);
-
+        internal static IntPtr lastActiveWindow;  // List<IntPtr> hwndList = new(3);
         internal enum Modifiers : uint { Alt = 0x0001, Control = 0x0002, Shift = 0x0004, Win = 0x0008 }
 
         [DllImport("user32.dll")]
@@ -93,165 +52,22 @@ namespace ClipMenu
         internal static extern bool RemoveClipboardFormatListener(IntPtr hwnd);
 
         [DllImport("user32.dll")]
-        internal extern static int EnumWindows(EnumWindowsCallback hwnd, IntPtr lParam);
-
-        [DllImport("user32.dll")]
-        internal static extern IntPtr GetLastActivePopup(IntPtr hWnd);
-
-        [DllImport("user32.dll")]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        internal static extern bool IsWindowVisible(IntPtr hWnd);
-
-        [DllImport("user32.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool SetForegroundWindow(IntPtr hWnd);
 
         [DllImport("user32.dll")]
         internal static extern IntPtr GetForegroundWindow();
 
-        [DllImport("user32.dll", CharSet = CharSet.Auto, ExactSpelling = true)]
-        internal static extern IntPtr GetWindow(IntPtr hWnd, int flags);
-
-        [DllImport("user32.dll", EntryPoint = "GetWindowLong")] // Win32 does not support GetWindowLongPtr directly. Problem wird durch Abfrage umgangen (s.u.)
-        internal static extern int GetWindowLongPtr64(IntPtr hWnd, int nIndex);
-
-        [DllImport("user32.dll", CharSet = CharSet.Unicode)]
-        private static extern int GetWindowText(IntPtr hWnd, StringBuilder text, int count);
-
-        [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
-        internal static extern int GetClassName(IntPtr hWnd, StringBuilder lpClassName, int nMaxCount);
-
-        [DllImport("DwmApi.dll")]
-        internal static extern int DwmGetWindowAttribute(IntPtr hwnd, int dwAttributeToGet, out int pvAttributeValue, int cbAttribute);
-
-        [DllImport("user32.dll")]
-        private static extern IntPtr GetWindowThreadProcessId(IntPtr hWnd, out int lpdwProcessId);
-
-        //internal static string GetWindowProcessName(IntPtr handle)
-        //{
-        //    GetWindowThreadProcessId(handle, out int processId);
-        //    Process p = Process.GetProcessById(processId);
-        //    return p.ProcessName;
-        //}
-
         internal static event KeyEventHandler KeyDown;
-        //public static event KeyEventHandler KeyUp;
-
-        internal static string GetWindowClass(IntPtr handle)
-        {
-            const int nChars = 256;
-            StringBuilder Buff = new(nChars);
-            if (GetClassName(handle, Buff, nChars) > 0) { return Buff.ToString(); }
-            return null;
-        }
-
-        internal static string GetWindowTitle(IntPtr handle)
-        {
-            const int nChars = 256;
-            StringBuilder Buff = new(nChars);
-            if (GetWindowText(handle, Buff, nChars) > 0) { return Buff.ToString(); }
-            return null;
-        }
-
-        //internal static bool IsWindowTopmost(IntPtr hWnd)
-        //{
-        //    int es = GetWindowLongPtr64(hWnd, GWL_EXSTYLE);
-        //    return (es & WS_EX_TOPMOST) == WS_EX_TOPMOST;
-        //}
-
-        internal static bool ActivateForegroundWindow(IntPtr exclHWnd)
-        {
-            IntPtr activeAppWindow = GetForegroundWindow();
-            GetWindowThreadProcessId(activeAppWindow, out int processId1); // bei Rechtsklick auf TrayIcon
-            GetWindowThreadProcessId(exclHWnd, out int processId2);        // ClipAction Strg+Win+C
-            if (activeAppWindow.Equals(IntPtr.Zero) || processId1.Equals(processId2) || GetWindowClass(activeAppWindow).Equals("Shell_TrayWnd")) { activeAppWindow = GetLastWinHandle(exclHWnd); }
-            if (activeAppWindow != IntPtr.Zero)
-            {
-                IntPtr prevAppWindow = GetLastActivePopup(activeAppWindow);
-                activeAppWindow = IsWindowVisible(prevAppWindow) ? prevAppWindow : activeAppWindow;
-                bool foo = false;
-                Task.Run(() => { foo = SetForegroundWindow(activeAppWindow); }).Wait(); // .Net 4.5 or later.
-                if (foo) { Thread.Sleep(20); return true; }
-                else { return ActivateForegroundWindow(activeAppWindow); }
-            }
-            return false;
-        }
-
-        internal static IntPtr GetLastWinHandle(IntPtr exclHwnd)
-        {
-            IntPtr ownerHwnd = IntPtr.Zero;
-            IntPtr foundHwnd = IntPtr.Zero;
-            windowHandles.Clear();
-            EnumWindows(new EnumWindowsCallback(EnumCallback), IntPtr.Zero);
-            foreach (IntPtr indexHwnd in windowHandles)
-            {
-                if (IsWindowVisible(indexHwnd) && indexHwnd != exclHwnd)
-                {
-                    ownerHwnd = indexHwnd;
-                    do
-                    {
-                        ownerHwnd = GetWindow(ownerHwnd, GW_OWNER);
-                    } while (!IntPtr.Zero.Equals(GetWindow(ownerHwnd, GW_OWNER)));
-                    ownerHwnd = ownerHwnd != IntPtr.Zero ? ownerHwnd : indexHwnd;
-                    if (GetLastActivePopup(ownerHwnd) == indexHwnd)
-                    {
-                        int es = GetWindowLongPtr64(indexHwnd, GWL_EXSTYLE);
-                        if ((!(((es & WS_EX_TOOLWINDOW) == WS_EX_TOOLWINDOW) && ((es & WS_EX_APPWINDOW) != WS_EX_APPWINDOW))) && !IsInvisibleWin10BackgroundAppWindow(indexHwnd))
-                        { // WS_EX_APPWINDOW Forces a top-level window onto the taskbar when the window is visible.
-                            foundHwnd = indexHwnd;
-                            break;
-                        }
-                    }
-                }
-            }
-            return foundHwnd;
-        }
-
-        private static bool EnumCallback(IntPtr hWnd, IntPtr lParam)
-        {
-            windowHandles.Add(hWnd);
-            return true;
-        }
-
-        private static bool IsInvisibleWin10BackgroundAppWindow(IntPtr hWindow)
-        {
-            int hr = DwmGetWindowAttribute(hWindow, DWMWA_CLOAKED, out int cloakedVal, sizeof(int));
-            if (hr != 0) { cloakedVal = 0; } // returns S_OK (which is zero) on success. Otherwise, it returns an HRESULT error code
-            return cloakedVal != 0;
-        }
 
         [StructLayout(LayoutKind.Sequential)]
-        private struct KBDLLHOOKSTRUCT
-        {
-            internal uint vkCode;
-            internal uint scanCode;
-            internal uint flags;
-            internal uint time;
-            internal UIntPtr dwExtraInfo;
-        }
+        private struct KBDLLHOOKSTRUCT { internal uint vkCode; internal uint scanCode; internal uint flags; internal uint time; internal UIntPtr dwExtraInfo; }
 
         [StructLayout(LayoutKind.Sequential)]
-        private struct MSLLHOOKSTRUCT
-        {
-            public POINT pt;
-            public uint mouseData;
-            public uint flags;
-            public uint time;
-            public IntPtr dwExtraInfo;
-        }
+        private struct MSLLHOOKSTRUCT { public POINT pt; public uint mouseData; public uint flags; public uint time; public IntPtr dwExtraInfo; }
 
         [StructLayout(LayoutKind.Sequential)]
-        public struct POINT
-        {
-            public int x;
-            public int y;
-        }
-
-        //[DllImport("user32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
-        //private static extern bool IsWindow(IntPtr hWnd);
-
-        //[DllImport("user32.dll")]
-        //private static extern IntPtr GetTopWindow(IntPtr hWnd);
+        public struct POINT { public int x; public int y; }
 
         [DllImport("user32.dll", CharSet = CharSet.Unicode, CallingConvention = CallingConvention.StdCall)]
         internal static extern short GetKeyState(int nVirtKey);
@@ -274,10 +90,6 @@ namespace ClipMenu
         internal static void UnregisterAltTabRWin() { UnhookWindowsHookEx(_hookIDKeyboard); }
         internal static nint RegisterAltTabXBtn() { return _hookIDMouse = SetWindowsHookEx(WH_MOUSE_LL, LowLevelMouseHookProc, IntPtr.Zero, 0); }
         internal static void UnregisterAltTabXBtn() { UnhookWindowsHookEx(_hookIDMouse); }
-
-        [return: MarshalAs(UnmanagedType.Bool)]
-        [DllImport("user32.dll", CharSet = CharSet.Unicode)]
-        internal static extern bool PostMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
 
         [DllImport("User32.dll", EntryPoint = "SendMessage", CharSet = CharSet.Unicode)]
         internal static extern IntPtr SendMessage(IntPtr hWnd, int Msg, IntPtr wParam, IntPtr lParam);
@@ -477,36 +289,22 @@ namespace ClipMenu
             VK_RWIN = 0x5C
         }
 
-        // Importieren der Win32-APIs
         [DllImport("user32.dll", SetLastError = true)]
         internal static extern IntPtr SetWinEventHook(uint eventMin, uint eventMax, IntPtr hModWinEventProc, WinEventDelegate lpfnWinEventProc, uint idProcess, uint idThread, uint dwFlags);
 
         [DllImport("user32.dll", SetLastError = true)]
         internal static extern int UnhookWinEvent(IntPtr hWinEventHook);
 
-        // Delegatentyp für den WinEventProc-Callback
-        public delegate void WinEventDelegate(IntPtr hWinEventHook, uint eventType, IntPtr hwnd, int idObject, int idChild, uint dwEventThread, uint dwmsEventTime);
+        internal delegate void WinEventDelegate(IntPtr hWinEventHook, uint eventType, IntPtr hwnd, int idObject, int idChild, uint dwEventThread, uint dwmsEventTime);
+
+        [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode, CallingConvention = CallingConvention.Cdecl)]
+        private static extern int GetWindowTextLength(IntPtr hWnd);
 
         internal static void WinEventProc(IntPtr hWinEventHook, uint eventType, IntPtr hwnd, int idObject, int idChild, uint dwEventThread, uint dwmsEventTime)
-        {
-            if (hwnd != IntPtr.Zero && idObject == 0x00000000 && idChild == 0 && eventType == EVENT_SYSTEM_FOREGROUND && IsWindowVisible(hwnd))
-            {
-                IntPtr owner = hwnd;
-                do { owner = GetWindow(owner, GW_OWNER); }
-                while (!IntPtr.Zero.Equals(GetWindow(owner, GW_OWNER)));
-                owner = owner != IntPtr.Zero ? owner : hwnd;
-                IntPtr last = GetLastActivePopup(owner);
-                if (last != IntPtr.Zero && IsWindowVisible(last) || last == hwnd)
-                {
-                    hwnd = last;
-                    int es = GetWindowLongPtr64(hwnd, GWL_EXSTYLE);
-                    if (!((es & WS_OVERLAPPEDWINDOW) != WS_OVERLAPPEDWINDOW)) //  !(es & WS_EX_Topmost)
-                    {
-                        if (hwndList.Count == 0 || !hwndList[0].Equals(hwnd)) { hwndList.Insert(0, hwnd); } //Clipboard.SetText(GetWindowTitle(hwnd) + (hwndList.Count > 1 ? Environment.NewLine + GetWindowTitle(hwndList[1]) : string.Empty));
-                    }
-                }
-            }
-        }
-
+        { //https://devblogs.microsoft.com/oldnewthing/20130930-00/?p=3083 // if (hwnd && idObject == OBJID_WINDOW && idChild == CHILDID_SELF && event == EVENT_SYSTEM_FOREGROUND)
+            if (hwnd != IntPtr.Zero && idObject == 0x00000000 && idChild == 0 && eventType == EVENT_SYSTEM_FOREGROUND && lastActiveWindow != hwnd &&
+                GetWindowTextLength(hwnd) > 0 && !hwnd.Equals(Application.OpenForms[0]?.Handle)) { lastActiveWindow = hwnd; } // ["ClipMenu"] funktioniert nicht!
+        } //Shell_TrayWnd muss elimniert werden (hat keinen WindowText); Restore from Minimize wird problemlos erfasst
     }
+
 }
