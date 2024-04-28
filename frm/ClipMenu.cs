@@ -2,7 +2,6 @@
 using System.Data;
 using System.Diagnostics;
 using System.Globalization;
-using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Xml;
 using System.Xml.Linq;
@@ -132,7 +131,7 @@ namespace ClipMenu
                 }
                 foreach (XElement element in xDocument.Root.Descendants("Dates"))
                 {
-                    TreeNode node = new() { Name = element.Name.ToString(), Text = "Daten" };
+                    TreeNode node = new() { Name = element.Name.ToString(), Text = "Daten", ToolTipText = "Strg+D" };
                     treeView.Nodes.Add(node);
                     foreach (XElement childElement in element.Elements())
                     {
@@ -140,11 +139,11 @@ namespace ClipMenu
                         node.Nodes.Add(childNode);
                     }
                 }
-                if (!treeView.Nodes.ContainsKey("Dates")) { treeView.Nodes.Add(new TreeNode() { Name = "Dates", Text = "Daten" }); }
+                if (!treeView.Nodes.ContainsKey("Dates")) { treeView.Nodes.Add(new TreeNode() { Name = "Dates", Text = "Daten", ToolTipText = "Strg+D" }); }
 
                 foreach (XElement element in xDocument.Root.Descendants("Snippets"))
                 {
-                    TreeNode node = new() { Name = element.Name.ToString(), Text = "Texte" };
+                    TreeNode node = new() { Name = element.Name.ToString(), Text = "Texte", ToolTipText = "Strg+T" };
                     treeView.Nodes.Add(node);
                     foreach (XElement childElement in element.Elements())
                     {
@@ -152,19 +151,24 @@ namespace ClipMenu
                         node.Nodes.Add(childNode);
                     }
                 }
-                if (!treeView.Nodes.ContainsKey("Snippets")) { treeView.Nodes.Add(new TreeNode() { Name = "Snippets", Text = "Texte" }); }
+                if (!treeView.Nodes.ContainsKey("Snippets")) { treeView.Nodes.Add(new TreeNode() { Name = "Snippets", Text = "Texte", ToolTipText = "Strg+T" }); }
 
                 foreach (XElement element in xDocument.Root.Descendants("Symbols"))
                 {
-                    TreeNode node = new() { Name = element.Name.ToString(), Text = "Zeichen" };
+                    TreeNode node = new() { Name = element.Name.ToString(), Text = "Zeichen", ToolTipText = "Strg+Z" };
                     treeView.Nodes.Add(node);
                     foreach (XElement childElement in element.Elements())
                     {
-                        TreeNode childNode = new() { Name = childElement.Name.ToString(), Text = childElement.Value };
+                        TreeNode childNode = new()
+                        {
+                            Name = childElement.Name.ToString(),
+                            Text = childElement.Value[..1],
+                            ToolTipText = childElement.Value.Length > 1 ? childElement.Value[1..] : ""
+                        };
                         node.Nodes.Add(childNode);
                     }
                 }
-                if (!treeView.Nodes.ContainsKey("Symbols")) { treeView.Nodes.Add(new TreeNode() { Name = "Symbols", Text = "Zeichen" }); }
+                if (!treeView.Nodes.ContainsKey("Symbols")) { treeView.Nodes.Add(new TreeNode() { Name = "Symbols", Text = "Zeichen", ToolTipText = "Strg+Z" }); }
                 treeView.ExpandAll();
 
                 foreach (XElement xElement in xDocument.Root.Descendants("Clips"))
@@ -602,6 +606,12 @@ namespace ClipMenu
             }
             else
             {
+                if (e.Node != null && e.Node.Parent.Name == "Symbols" && e.Node.Text?.Length == 1)
+                {
+                    dontHide = newButton.Checked = true;
+                    e.Node.ToolTipText = Utilities.InputBoxDialog(appName, "Bitte geben Sie einen ToolTipText ein:", e.Node.ToolTipText);
+                    dontHide = newButton.Checked = false;
+                }
                 treeView.SelectedNode = e.Node;
                 treeViewCache = Utilities.CloneTreeView(treeView);
             }
@@ -719,6 +729,48 @@ namespace ClipMenu
                         if (tabControl.SelectedIndex == 0 && listBox.Items.Count > 0) { BtnDeleteAll_Click(null, null); }
                         return true;
                     }
+                case Keys.V | Keys.Control:
+                    {
+                        tabControl.SelectedIndex = 0;
+                        listBox.Focus();
+                        return true;
+                    }
+                case Keys.S | Keys.Control:
+                    {
+                        tabControl.SelectedIndex = 1;
+                        treeView.Focus();
+                        return true;
+                    }
+                case Keys.E | Keys.Control:
+                    {
+                        tabControl.SelectedIndex = 2;
+                        btnStandardSize.Focus();
+                        return true;
+                    }
+                case Keys.D | Keys.Control:
+                    {
+                        tabControl.SelectedIndex = 1;
+                        treeView.SelectedNode = treeView.Nodes[0];
+                        treeView.Nodes[0].EnsureVisible();
+                        treeView.Nodes[0].Expand();
+                        return true;
+                    }
+                case Keys.T | Keys.Control:
+                    {
+                        tabControl.SelectedIndex = 1;
+                        treeView.SelectedNode = treeView.Nodes[1];
+                        treeView.Nodes[1].EnsureVisible();
+                        treeView.Nodes[1].Expand();
+                        return true;
+                    }
+                case Keys.Z | Keys.Control:
+                    {
+                        tabControl.SelectedIndex = 1;
+                        treeView.SelectedNode = treeView.Nodes[2];
+                        treeView.Nodes[2].EnsureVisible();
+                        treeView.Nodes[2].Expand();
+                        return true;
+                    }
                 case Keys.Home | Keys.Alt:
                     {
                         newButton.Checked = !newButton.Checked;
@@ -796,6 +848,11 @@ namespace ClipMenu
                     NativeMethods.SendKeysPaste();
                 }
                 else { Utilities.ErrorMsgTaskDlg(Handle, "Die Zwischenablage enthält keinen Text!"); }
+            }
+            else if (m.Msg == NativeMethods.WM_USER) { decimalPlaces = m.WParam.ToInt32(); } // form ClipCalc
+            else if (m.Msg == NativeMethods.WM_CLIPEDIT_MSG || m.Msg == NativeMethods.WM_CLIPCALC_MSG)
+            {
+                if (dontHide) { dontHide = newButton.Checked = false; }
             }
             else { base.WndProc(ref m); }
         }
@@ -950,13 +1007,11 @@ namespace ClipMenu
 
         private void TsButtonNew_Click(object sender, EventArgs e)
         {
-            if (treeView.SelectedNode is not TreeNode node) { return; }
+            if (treeView.SelectedNode is not TreeNode node || node.IsEditing) { return; }
             if (node.Parent != null) { node = node.Parent; }
             TreeNode newChildNode = new() { Name = $"{node.Name[..^1]}999", Text = string.Empty };
             node.Nodes.Add(newChildNode);
-
             for (int i = 0; i < node.Nodes.Count; i++) { node.Nodes[i].Name = Regex.Replace(node.Nodes[i].Name, @"\d+$", i.ToString()); } // tidy up node names
-
             treeView.SelectedNode = null;
             node.ExpandAll();
             newChildNode.BeginEdit();
@@ -965,7 +1020,7 @@ namespace ClipMenu
 
         private void TsButtonDelete_Click(object sender, EventArgs e)
         {
-            if (treeView.SelectedNode is not TreeNode node || node.Parent == null) { return; }
+            if (treeView.SelectedNode is not TreeNode node || node.Parent == null || node.IsEditing) { return; }
             int parentIndex = treeView.Nodes.IndexOf(node.Parent);
             deletedNodeTuple = new(parentIndex, treeView.Nodes[parentIndex].Nodes.IndexOf(node), node);
             node.Remove();
@@ -976,7 +1031,7 @@ namespace ClipMenu
 
         private void TsButtonMoveUp_Click(object sender, EventArgs e)
         {
-            if (treeView.SelectedNode is not TreeNode node) { return; }
+            if (treeView.SelectedNode is not TreeNode node || node.IsEditing) { return; }
             TreeNode parent = node.Parent;
             if (parent != null)
             {
@@ -993,7 +1048,7 @@ namespace ClipMenu
 
         private void TsButtonMoveDn_Click(object sender, EventArgs e)
         {
-            if (treeView.SelectedNode is not TreeNode node) { return; }
+            if (treeView.SelectedNode is not TreeNode node || node.IsEditing) { return; }
             TreeNode parent = node.Parent;
             if (parent != null)
             {
@@ -1088,7 +1143,10 @@ namespace ClipMenu
                 TreeNode snippetNode = treeView.Nodes.Find(foundText.Length.Equals(1) && !char.IsDigit(foundText[0]) && !char.IsLetter(foundText[0]) ? "Symbols" : DateTime.TryParse(foundText, out _) ? "Dates" : "Snippets", true)[0];
                 if (snippetNode != null)
                 {
-                    TreeNode newChildNode = new() { Name = $"{snippetNode.Name[..^1]}999", Text = foundText };
+                    dontHide = newButton.Checked = true;
+                    string userInput = Utilities.InputBoxDialog(appName, "Bitte geben Sie einen ToolTipText ein:");
+                    dontHide = newButton.Checked = false;
+                    TreeNode newChildNode = new() { Name = $"{snippetNode.Name[..^1]}999", Text = foundText, ToolTipText = userInput };
                     snippetNode.Nodes.Add(newChildNode);
                     for (int i = 0; i < snippetNode.Nodes.Count; i++) { snippetNode.Nodes[i].Name = Regex.Replace(snippetNode.Nodes[i].Name, @"\d+$", i.ToString()); } // tidy up node names
                     treeView.SelectedNode = newChildNode;

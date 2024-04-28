@@ -1,4 +1,5 @@
-﻿using Microsoft.Win32;
+﻿using Microsoft.VisualBasic;
+using Microsoft.Win32;
 using System.ComponentModel;
 using System.Data;
 using System.Diagnostics;
@@ -156,7 +157,7 @@ namespace ClipMenu
             {
                 if (string.IsNullOrEmpty(treeNode.Name)) { continue; }
                 XElement element = new(treeNode.Name);
-                if (treeNode.Parent != null) { element.Value = treeNode.Text; }
+                if (treeNode.Parent != null) { element.Value = treeNode.Text + treeNode.ToolTipText; } // funktioniert wenn nur Symbols TooltipText haben
                 else { element.Add(CreateXmlElementList(treeNode.Nodes)); } // d.h. Funktion wird ein zweites Mal durchlaufen 
                 elements.Add(element);
             }
@@ -180,6 +181,12 @@ namespace ClipMenu
                 if (!result) { node.Remove(); }
             }
             return result;
+        }
+
+        public static string InputBoxDialog(string title, string prompt, string defaultValue = "")
+        {
+            string inputText = Interaction.InputBox(prompt, title, defaultValue);
+            return inputText;
         }
 
         internal static TreeView CloneTreeView(TreeView treeView)

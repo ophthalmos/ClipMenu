@@ -1,7 +1,4 @@
-﻿using System.Collections;
-using System.Diagnostics;
-using System.Runtime.InteropServices;
-using System.Text;
+﻿using System.Runtime.InteropServices;
 
 namespace ClipMenu
 {
@@ -17,7 +14,6 @@ namespace ClipMenu
         private const int WM_XBUTTONDOWN = 0x20B;
         private const int WM_XBUTTONUP = 0x020C;
         private const int HC_ACTION = 0;
-        //internal const int WM_NCACTIVATE = 0x0086;
 
         private const int WH_KEYBOARD_LL = 13;
         private const int WH_MOUSE_LL = 14;
@@ -31,6 +27,10 @@ namespace ClipMenu
 
         internal const int WM_HOTKEY = 0x312;
         internal const int HOTKEY_ID = 0x0312; // 0; // 42;
+
+        internal const int WM_USER = 0x0400; // (Modal)ClipCalc.DecimalPlaces
+        internal const int WM_CLIPEDIT_MSG = WM_USER + 1; // ClipEdit ⇒ ClipMenu.dontHide
+        internal const int WM_CLIPCALC_MSG = WM_USER + 2; // ClipEdit ⇒ ClipMenu.dontHide
 
         internal static IntPtr lastActiveWindow;  // List<IntPtr> hwndList = new(3);
         internal enum Modifiers : uint { Alt = 0x0001, Control = 0x0002, Shift = 0x0004, Win = 0x0008 }
@@ -93,6 +93,10 @@ namespace ClipMenu
 
         [DllImport("User32.dll", EntryPoint = "SendMessage", CharSet = CharSet.Unicode)]
         internal static extern IntPtr SendMessage(IntPtr hWnd, int Msg, IntPtr wParam, IntPtr lParam);
+
+        [return: MarshalAs(UnmanagedType.Bool)]
+        [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+        internal static extern bool PostMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
 
         internal static void SendKeysCopy()
         {

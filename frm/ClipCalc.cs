@@ -260,6 +260,11 @@ namespace ClipMenu
             finally { Close(); }
         }
 
-        private void FrmClipCalc_FormClosing(object sender, FormClosingEventArgs e) { Utilities.IsCalcOpen = false; }
+        private void FrmClipCalc_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            Utilities.IsCalcOpen = false;
+            NativeMethods.PostMessage(Application.OpenForms[0].Handle, NativeMethods.WM_CLIPCALC_MSG, 0, 0); // dontHide false;
+            if (!Modal) { NativeMethods.PostMessage(Application.OpenForms[0].Handle, NativeMethods.WM_USER, trackBar.Value, 0); }
+        }
     }
 }

@@ -155,7 +155,11 @@ namespace ClipMenu
 
         private void ExitToolStripMenuItem_Click(object sender, EventArgs e) { Close(); }
 
-        private void FrmClipEdit_FormClosing(object sender, FormClosingEventArgs e) { Utilities.IsEditOpen = false; }
+        private void FrmClipEdit_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            Utilities.IsEditOpen = false;
+            NativeMethods.PostMessage(Application.OpenForms[0].Handle, NativeMethods.WM_CLIPEDIT_MSG, 0, 0); // dontHide false;
+        }
 
         private void DeleteAllToolStripMenuItem_Click(object sender, EventArgs e) { textBox.Clear(); }
 

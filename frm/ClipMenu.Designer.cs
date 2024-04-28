@@ -104,6 +104,8 @@
             trayMenuStrip = new ContextMenuStrip(components);
             editorToolStripMenuItem = new ToolStripMenuItem();
             rechnerToolStripMenuItem = new ToolStripMenuItem();
+            copyStripMenuItem = new ToolStripMenuItem();
+            toolStripSeparator10 = new ToolStripSeparator();
             showToolStripMenuItem = new ToolStripMenuItem();
             toolStripSeparator = new ToolStripSeparator();
             restartToolStripMenuItem = new ToolStripMenuItem();
@@ -113,8 +115,6 @@
             toolStripStatusLabel = new ToolStripStatusLabel();
             toolTip = new ToolTip(components);
             timer = new System.Windows.Forms.Timer(components);
-            copyStripMenuItem = new ToolStripMenuItem();
-            toolStripSeparator10 = new ToolStripSeparator();
             contextMenuStrip.SuspendLayout();
             clipMenuStrip.SuspendLayout();
             tabControl.SuspendLayout();
@@ -345,6 +345,7 @@
             tabPage1.Size = new Size(322, 511);
             tabPage1.TabIndex = 0;
             tabPage1.Text = "Verlauf";
+            tabPage1.ToolTipText = "Strg+V";
             tabPage1.UseVisualStyleBackColor = true;
             // 
             // panelTop
@@ -406,6 +407,7 @@
             tabPage2.Size = new Size(322, 511);
             tabPage2.TabIndex = 1;
             tabPage2.Text = "Sammlung";
+            toolTip.SetToolTip(tabPage2, "Strg+S");
             tabPage2.UseVisualStyleBackColor = true;
             // 
             // treeView
@@ -439,6 +441,7 @@
             treeNode12.Name = "Symbols";
             treeNode12.Text = "Zeichen";
             treeView.Nodes.AddRange(new TreeNode[] { treeNode8, treeNode10, treeNode12 });
+            treeView.ShowNodeToolTips = true;
             treeView.Size = new Size(316, 479);
             treeView.TabIndex = 0;
             treeView.BeforeLabelEdit += TreeView_BeforeLabelEdit;
@@ -735,7 +738,7 @@
             // 
             trayMenuStrip.Items.AddRange(new ToolStripItem[] { editorToolStripMenuItem, rechnerToolStripMenuItem, copyStripMenuItem, toolStripSeparator10, showToolStripMenuItem, toolStripSeparator, restartToolStripMenuItem, toolStripSeparator4, exitToolStripMenuItem });
             trayMenuStrip.Name = "trayMenuStrip";
-            trayMenuStrip.Size = new Size(208, 176);
+            trayMenuStrip.Size = new Size(208, 154);
             // 
             // editorToolStripMenuItem
             // 
@@ -754,6 +757,22 @@
             rechnerToolStripMenuItem.Size = new Size(207, 22);
             rechnerToolStripMenuItem.Text = "Clip&Calc";
             rechnerToolStripMenuItem.Click += RechnerToolStripMenuItem_Click;
+            // 
+            // copyStripMenuItem
+            // 
+            copyStripMenuItem.Font = new Font("Segoe UI", 9F);
+            copyStripMenuItem.Image = Properties.Resources.clipboard__arrow;
+            copyStripMenuItem.ImageTransparentColor = Color.White;
+            copyStripMenuItem.Name = "copyStripMenuItem";
+            copyStripMenuItem.ShortcutKeyDisplayString = "Strg+Win+C";
+            copyStripMenuItem.Size = new Size(207, 22);
+            copyStripMenuItem.Text = "Clip&Action";
+            copyStripMenuItem.Click += CopyStripMenuItem_Click;
+            // 
+            // toolStripSeparator10
+            // 
+            toolStripSeparator10.Name = "toolStripSeparator10";
+            toolStripSeparator10.Size = new Size(204, 6);
             // 
             // showToolStripMenuItem
             // 
@@ -814,22 +833,6 @@
             // 
             timer.Interval = 200;
             timer.Tick += Timer_Tick;
-            // 
-            // copyStripMenuItem
-            // 
-            copyStripMenuItem.Font = new Font("Segoe UI", 9F);
-            copyStripMenuItem.Image = Properties.Resources.clipboard__arrow;
-            copyStripMenuItem.ImageTransparentColor = Color.White;
-            copyStripMenuItem.Name = "copyStripMenuItem";
-            copyStripMenuItem.ShortcutKeyDisplayString = "Strg+Win+C";
-            copyStripMenuItem.Size = new Size(207, 22);
-            copyStripMenuItem.Text = "Clip&Action";
-            copyStripMenuItem.Click += CopyStripMenuItem_Click;
-            // 
-            // toolStripSeparator10
-            // 
-            toolStripSeparator10.Name = "toolStripSeparator10";
-            toolStripSeparator10.Size = new Size(204, 6);
             // 
             // FrmClipMenu
             // 
