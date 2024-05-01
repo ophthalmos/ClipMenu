@@ -1,5 +1,4 @@
-﻿using Microsoft.VisualBasic;
-using Microsoft.Win32;
+﻿using Microsoft.Win32;
 using System.ComponentModel;
 using System.Data;
 using System.Diagnostics;
@@ -21,7 +20,7 @@ namespace ClipMenu
                 "¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯" + Environment.NewLine +
                 "Strg+Win+V:        Anzeigen des Programmfensters" + Environment.NewLine +
                 "Strg+Win+C:        dito, sendet aber zuvor Strg+C" + Environment.NewLine +
-                "Strg+Win+Einfg:  ClipEditor (Topmost), sendet zuvor Strg+C" + Environment.NewLine +
+                "Strg+Win+Einfg:  ClipEditor, Topmost-Zwischenablage" + Environment.NewLine +
                 "Strg+Win+R:         ClipCalc, einfacher Taschenrechner" + Environment.NewLine + Environment.NewLine +
                 //"Shift+Strg+V:  Textformatierungen entfernen und resultierenden" + Environment.NewLine +
                 //"                          Text in das akutelle Fenster eingefügen" + Environment.NewLine + Environment.NewLine +
@@ -181,12 +180,6 @@ namespace ClipMenu
                 if (!result) { node.Remove(); }
             }
             return result;
-        }
-
-        public static string InputBoxDialog(string title, string prompt, string defaultValue = "")
-        {
-            string inputText = Interaction.InputBox(prompt, title, defaultValue);
-            return inputText;
         }
 
         internal static TreeView CloneTreeView(TreeView treeView)

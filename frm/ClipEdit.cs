@@ -1,6 +1,4 @@
-﻿using System.Reflection;
-
-namespace ClipMenu
+﻿namespace ClipMenu
 {
     public partial class FrmClipEdit : Form
     {

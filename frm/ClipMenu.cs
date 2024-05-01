@@ -608,9 +608,10 @@ namespace ClipMenu
             {
                 if (e.Node != null && e.Node.Parent.Name == "Symbols" && e.Node.Text?.Length == 1)
                 {
-                    dontHide = newButton.Checked = true;
-                    e.Node.ToolTipText = Utilities.InputBoxDialog(appName, "Bitte geben Sie einen ToolTipText ein:", e.Node.ToolTipText);
-                    dontHide = newButton.Checked = false;
+                    dontHide = true;
+                    InputBox inputBox = new(e.Node.Text, "Bitte geben Sie einen ToolTipText ein:", e.Node.ToolTipText);
+                    if (inputBox.ShowDialog(this) == DialogResult.OK) { e.Node.ToolTipText = inputBox.InputTextBox.Text; }
+                    dontHide = false;
                 }
                 treeView.SelectedNode = e.Node;
                 treeViewCache = Utilities.CloneTreeView(treeView);
@@ -1112,9 +1113,9 @@ namespace ClipMenu
             e.Cancel = true;
             if (!shownTaskDialog)
             {
-                shownTaskDialog = dontHide = newButton.Checked = true;
+                shownTaskDialog = dontHide = true;
                 Utilities.HelpMsgTaskDlg(Handle, Icon);
-                shownTaskDialog = dontHide = newButton.Checked = false;
+                shownTaskDialog = dontHide = false;
                 listBox.Focus();
             }
         }
@@ -1124,9 +1125,9 @@ namespace ClipMenu
             hlpevent.Handled = true;
             if (!shownTaskDialog)
             {
-                shownTaskDialog = dontHide = newButton.Checked = true;
+                shownTaskDialog = dontHide = true;
                 Utilities.HelpMsgTaskDlg(Handle, Icon);
-                shownTaskDialog = dontHide = newButton.Checked = false;
+                shownTaskDialog = dontHide = false;
                 listBox.Focus();
             }
         }
@@ -1143,9 +1144,11 @@ namespace ClipMenu
                 TreeNode snippetNode = treeView.Nodes.Find(foundText.Length.Equals(1) && !char.IsDigit(foundText[0]) && !char.IsLetter(foundText[0]) ? "Symbols" : DateTime.TryParse(foundText, out _) ? "Dates" : "Snippets", true)[0];
                 if (snippetNode != null)
                 {
-                    dontHide = newButton.Checked = true;
-                    string userInput = Utilities.InputBoxDialog(appName, "Bitte geben Sie einen ToolTipText ein:");
-                    dontHide = newButton.Checked = false;
+                    dontHide = true;
+                    string userInput = string.Empty;
+                    InputBox inputBox = new(foundText[0].ToString(), "Bitte geben Sie einen ToolTipText ein:");
+                    if (inputBox.ShowDialog(this) == DialogResult.OK) { userInput = inputBox.InputTextBox.Text; }
+                    dontHide = false;
                     TreeNode newChildNode = new() { Name = $"{snippetNode.Name[..^1]}999", Text = foundText, ToolTipText = userInput };
                     snippetNode.Nodes.Add(newChildNode);
                     for (int i = 0; i < snippetNode.Nodes.Count; i++) { snippetNode.Nodes[i].Name = Regex.Replace(snippetNode.Nodes[i].Name, @"\d+$", i.ToString()); } // tidy up node names
@@ -1162,7 +1165,7 @@ namespace ClipMenu
             DataRow foundRow = dataTable.AsEnumerable().SingleOrDefault(r => r.Field<DateTime>("Time").Equals(lboxTable.Rows[listBox.SelectedIndex]["Time"]));
             if (foundRow != null)
             {
-                dontHide = newButton.Checked = true;
+                dontHide = true;
                 bool isImage = foundRow["Type"].ToString().Equals("image");
                 bool isFiles = foundRow["Type"].ToString().Equals("file");
                 string foo = string.Empty;
@@ -1217,7 +1220,7 @@ namespace ClipMenu
                     PropertyToolStripMenuItem_Click(null, null);
                 }
                 else { propertyExpanderExpanded = true; }
-                dontHide = newButton.Checked = false;
+                dontHide = false;
             }
         }
 

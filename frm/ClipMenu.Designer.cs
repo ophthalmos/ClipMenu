@@ -576,6 +576,7 @@
             tabPage3.Size = new Size(322, 511);
             tabPage3.TabIndex = 2;
             tabPage3.Text = "Einstellungen";
+            tabPage3.ToolTipText = "Strg+E";
             tabPage3.UseVisualStyleBackColor = true;
             // 
             // groupBox
