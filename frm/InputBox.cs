@@ -9,7 +9,12 @@
             InitializeComponent();
             Text = title;
             label.Text = prompt;
-            textBox.Text = defaultValue;   
+            textBox.Text = defaultValue;
+        }
+
+        private void InputBox_Load(object sender, EventArgs e)
+        {
+            NativeMethods.SendMessage(textBox.Handle, NativeMethods.EM_SETMARGINS, NativeMethods.EC_LEFTMARGIN, 65536 + 3);
         }
     }
 }

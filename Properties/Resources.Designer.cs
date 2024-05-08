@@ -153,6 +153,16 @@ namespace ClipMenu.Properties {
         /// <summary>
         ///   Sucht eine lokalisierte Ressource vom Typ System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap Download_grey_16x {
+            get {
+                object obj = ResourceManager.GetObject("Download_grey_16x", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Ressource vom Typ System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap edit_lowercase {
             get {
                 object obj = ResourceManager.GetObject("edit-lowercase", resourceCulture);
@@ -226,6 +236,16 @@ namespace ClipMenu.Properties {
         internal static System.Drawing.Bitmap TranslateDocument_16x {
             get {
                 object obj = ResourceManager.GetObject("TranslateDocument_16x", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Ressource vom Typ System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap Upload_gray_16x {
+            get {
+                object obj = ResourceManager.GetObject("Upload_gray_16x", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

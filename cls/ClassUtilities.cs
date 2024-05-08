@@ -98,7 +98,7 @@ namespace ClipMenu
         {
             text = new string(text.Where(c => char.IsDigit(c) || c == '.' || c == ',' || c == '+' || c == '-' || c == '(' || c == ')' || c == '*' ||
             c == '/' || c == '÷' || c == '×' || c == 'x' || c == '^' || c == ':').ToArray());
-            return text.Replace('.', ',').Replace('÷', '/').Replace('×', '*').Replace('x', '*').Replace(':', '/').Replace("\n", " "); ;
+            return text.Replace('.', ',').Replace('÷', '/').Replace(':', '/').Replace("\n", " "); ;
         }
 
         //public static string RemoveInvalidXmlChars(string text)
@@ -357,7 +357,7 @@ namespace ClipMenu
             return default;
         }
 
-    // Statische Klasse zum Verwalten des Zustands von Form2 // public static class FormManager // {
+        // Statische Klasse zum Verwalten des Zustands von Form2 // public static class FormManager // {
         private static bool clipCalcIsOpen = false;
         private static bool clipEditIsOpen = false;
 

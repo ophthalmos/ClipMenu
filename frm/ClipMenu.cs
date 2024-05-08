@@ -2,6 +2,7 @@
 using System.Data;
 using System.Diagnostics;
 using System.Globalization;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml;
 using System.Xml.Linq;
@@ -27,7 +28,7 @@ namespace ClipMenu
         private readonly int maxDisplayChars = 196; // cave: größere Werte als 197 führen dazu das letzte Zeile nicht selektiert wird
         private readonly int maxTextLength = 2500000;
         private readonly string xmlPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), appName, appName + ".xml");
-        private readonly string logPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), appName, appName + ".log");
+        internal readonly string logPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), appName, appName + ".log");
         private int maxItems = 50;
         private bool passwdExcld = true;
         private bool plainText = false;
@@ -192,10 +193,20 @@ namespace ClipMenu
 
             treeViewCache = Utilities.CloneTreeView(treeView);
 
-            if (plainText && NativeMethods.RegisterHotKey(Handle, NativeMethods.HOTKEY_ID, (uint)(NativeMethods.Modifiers.Shift | NativeMethods.Modifiers.Control), (uint)Keys.V) == false)
+            if (plainText && NativeMethods.RegisterHotKey(Handle, NativeMethods.HOTKEY_ID1, (uint)(NativeMethods.Modifiers.Shift | NativeMethods.Modifiers.Control), (uint)Keys.V) == false)
             { Utilities.ErrorMsgTaskDlg(Handle, "Strg+Shift+V konnte nicht registriert werden.\nWahrscheinlich wird die Tastenkombination\nbereits von einer anderen App benutzt."); }
+            if (plainText && NativeMethods.RegisterHotKey(Handle, NativeMethods.HOTKEY_ID2, (uint)(NativeMethods.Modifiers.Shift | NativeMethods.Modifiers.Control), (uint)Keys.Insert) == false)
+            { Utilities.ErrorMsgTaskDlg(Handle, "Strg+Shift+Einfg konnte nicht registriert werden.\nWahrscheinlich wird die Tastenkombination\nbereits von einer anderen App benutzt."); }
             if (NativeMethods.RegisterAltTabRWin() > 0) { NativeMethods.KeyDown += new KeyEventHandler(GlobalKeyboardHook_KeyDown); }
             if (altTabXBtn) { NativeMethods.RegisterAltTabXBtn(); }
+
+            try
+            {
+                using StreamWriter writer = new(logPath);
+                writer.Write(""); // Datei leeren
+            }
+            catch { }
+            LogEvent("FrmClipMenu_Load");
         }
 
         private void GlobalKeyboardHook_KeyDown(object sender, KeyEventArgs e)
@@ -309,7 +320,8 @@ namespace ClipMenu
         private void ExitApplicationJob()
         {
             NativeMethods.UnhookWinEvent(hWinEventHook);
-            NativeMethods.UnregisterHotKey(Handle, NativeMethods.HOTKEY_ID);
+            NativeMethods.UnregisterHotKey(Handle, NativeMethods.HOTKEY_ID1);
+            NativeMethods.UnregisterHotKey(Handle, NativeMethods.HOTKEY_ID2);
             NativeMethods.UnregisterAltTabRWin();
             NativeMethods.UnregisterAltTabXBtn();
             NativeMethods.RemoveClipboardFormatListener(Handle);
@@ -561,6 +573,18 @@ namespace ClipMenu
             }
             else if (e.KeyCode == Keys.Delete && treeView.SelectedNode != null) { TsButtonDelete_Click(null, null); }
             else if (e.KeyCode == Keys.F2 && treeView.SelectedNode != null) { treeView.SelectedNode.BeginEdit(); }
+
+            else if (e.KeyCode == Keys.Up && e.Modifiers == Keys.Alt && treeView.SelectedNode != null)
+            {
+                TsButtonMoveUp_Click(null, null);
+                e.Handled = e.SuppressKeyPress = true;
+            }
+            else if (e.KeyCode == Keys.Down && e.Modifiers == Keys.Alt && treeView.SelectedNode != null)
+            {
+                TsButtonMoveDn_Click(null, null);
+                e.Handled = e.SuppressKeyPress = true;
+            }
+
             else if (e.KeyCode == Keys.Z && e.Modifiers == Keys.Control && deletedNodeTuple != null)
             {
                 treeView.Nodes[deletedNodeTuple.Item1].Nodes.Insert(deletedNodeTuple.Item2, deletedNodeTuple.Item3);
@@ -575,9 +599,9 @@ namespace ClipMenu
         private void TreeView_AfterSelect(object sender, TreeViewEventArgs e)
         {
             tsButtonNew.Enabled = e.Node.IsSelected;
-            tsButtonDelete.Enabled = tsButtonMoveUp.Enabled = tsButtonMoveDn.Enabled = e.Node.Parent != null;
-            if (e.Node.Parent != null && e.Node.Parent.Nodes.IndexOf(e.Node) == 0) { tsButtonMoveUp.Enabled = false; }
-            else if (e.Node.Parent != null && e.Node.Parent.Nodes.IndexOf(e.Node) == e.Node.Parent.Nodes.Count - 1) { tsButtonMoveDn.Enabled = false; }
+            tsButtonDelete.Enabled = removeToolStripMenuItem.Enabled = tsButtonMoveUp.Enabled = tsButtonMoveDn.Enabled = upToolStripMenuItem.Enabled = downToolStripMenuItem.Enabled = e.Node.Parent != null;
+            if (e.Node.Parent != null && e.Node.Parent.Nodes.IndexOf(e.Node) == 0) { upToolStripMenuItem.Enabled = tsButtonMoveUp.Enabled = false; }
+            else if (e.Node.Parent != null && e.Node.Parent.Nodes.IndexOf(e.Node) == e.Node.Parent.Nodes.Count - 1) { downToolStripMenuItem.Enabled = tsButtonMoveDn.Enabled = false; }
         }
 
         private void TreeView_BeforeLabelEdit(object sender, NodeLabelEditEventArgs e)
@@ -892,6 +916,7 @@ namespace ClipMenu
             }
             Show(); // auf InsertClipboard warten
             timer.Enabled = true; //new Thread(new ThreadStart(ThreadJob)) { IsBackground = true }.Start(); // führte auf langsamem PC zum Absturz
+            LogEvent("CopyStripMenuItem_Click");
         }
 
         private void ExitToolStripMenuItem_Click(object sender, EventArgs e) { Application.Exit(); }
@@ -913,6 +938,7 @@ namespace ClipMenu
                 DataRow foundRow = dataTable.AsEnumerable().SingleOrDefault(r => r.Field<DateTime>("Time").Equals(lboxTable.Rows[index]["Time"]));
                 if (foundRow != null)
                 {
+                    //if (Utilities.IsEditOpen && Application.OpenForms["FrmClipEdit"] is FrmClipEdit frmClipEdit) { frmClipEdit.TopMost = false; }
                     ignoreClipboardChange = true;
                     if (foundRow["Type"].ToString().Equals("image"))
                     {
@@ -949,7 +975,12 @@ namespace ClipMenu
                     dataTable.Rows.RemoveAt(index);
                     dataTable.AcceptChanges();
                     lboxTable = Utilities.DataTable2LBoxDataTable(dataTable, maxDisplayChars);
-                    if (NativeMethods.SetForegroundWindow(NativeMethods.lastActiveWindow)) { NativeMethods.SendKeysPaste(); }
+                    if (NativeMethods.SetForegroundWindow(NativeMethods.lastActiveWindow))
+                    {
+                        NativeMethods.SendKeysPaste();
+                        LogEvent("SendText: SendKeysPaste");
+                    }
+                    else { LogEvent("SendText: ERROR"); }
                 }
                 else { Utilities.ErrorMsgTaskDlg(Handle, "Der Text wurde nicht gefunden!"); }
             }
@@ -961,6 +992,7 @@ namespace ClipMenu
             try
             {
                 Hide(); // Hiding is equivalent to setting the Visible property to false
+                //if (Utilities.IsEditOpen && Application.OpenForms["FrmClipEdit"] is FrmClipEdit frmClipEdit) { frmClipEdit.TopMost = false; }
                 ignoreClipboardChange = true;
                 Clipboard.Clear();
                 ignoreClipboardChange = true;
@@ -969,7 +1001,12 @@ namespace ClipMenu
                     Utilities.ErrorMsgTaskDlg(Handle, "Es ist ein Fehler aufgetreten.\nVersuchen Sie es noch einmal.");
                     Show();
                 }
-                else if (NativeMethods.SetForegroundWindow(NativeMethods.lastActiveWindow)) { NativeMethods.SendKeysPaste(); }
+                else if (NativeMethods.SetForegroundWindow(NativeMethods.lastActiveWindow))
+                {
+                    NativeMethods.SendKeysPaste();
+                    LogEvent("SendSnippet: SendKeysPaste");
+                }
+                else { LogEvent("SendSnippet: ERROR"); }
             }
             catch (Exception ex) when (ex is NullReferenceException) { }
         }
@@ -1470,6 +1507,28 @@ namespace ClipMenu
                 if (Visible) { tabControl.SelectedIndex = 0; } //  s. FrmClipMenu_VisibleChanged BringToFront(); Activate(); 
             }
         }
+
+        private void EditToolStripMenuItem_Click(object sender, EventArgs e) { treeView.SelectedNode?.BeginEdit(); }
+        private void UpToolStripMenuItem_Click(object sender, EventArgs e) { TsButtonMoveUp_Click(null, null); }
+        private void DownToolStripMenuItem_Click(object sender, EventArgs e) { TsButtonMoveDn_Click(null, null); }
+        private void RemoveToolStripMenuItem_Click(object sender, EventArgs e) { TsButtonDelete_Click(null, null); }
+
+        private void LogEvent(string message = "")
+        {
+            try
+            {
+                if (NativeMethods.lastActiveWindow == IntPtr.Zero) { Console.Beep(); return; }
+                StringBuilder sb = new(256);
+                int charsCopied = NativeMethods.GetWindowText(NativeMethods.lastActiveWindow, sb, sb.Capacity);
+                using StreamWriter writer = new(logPath, true, Encoding.UTF8); // Datei erstellen oder öffnen
+                writer.WriteLine(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + (message.Length > 0 ? " | " + message : "") +
+                    (charsCopied > 0 ? string.Concat(" | ", sb.ToString(0, charsCopied)) : ""));
+                writer.Flush();
+            }
+            catch { }
+        }
+
+
 
     }
 }

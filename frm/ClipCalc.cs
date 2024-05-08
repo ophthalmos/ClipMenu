@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using System.Text.RegularExpressions;
+using System.Xml.Linq;
 
 namespace ClipMenu
 {
@@ -112,15 +113,14 @@ namespace ClipMenu
                 //string lastString = tbDisplay.Lines[tbDisplay.Lines.Length - 1];
                 //if (lastString != res1.ToString()) { prevCalcString = lastString.Trim().Replace("~", ""); };
                 if (tbDisplay.Text != res1.ToString()) { prevCalcString = tbDisplay.Text.Trim().Replace("~", ""); };
-                res1 = calcInstance.Evaluate(tbDisplay.Text); // die Berechnung des Formelausdrucks!
+                if (new Regex(@"^0[×|x][a-zA-Z0-9]+$").Match(tbDisplay.Text).Success) { res1 = Convert.ToInt32(tbDisplay.Text, 16); } // Hex to int
+                else { res1 = calcInstance.Evaluate(tbDisplay.Text); } // die Berechnung des Formelausdrucks!
                 if (trackBar.Value >= 0) { tbDisplay.Text = Math.Round(res1, trackBar.Value).ToString(); }
                 else { tbDisplay.Text = res1.ToString(); }
-                if (tbDisplay.Text != res1.ToString())
-                {// commented code for multiline textbox - not yet implemented!
-                    //tbDisplay.Text = tbDisplay.Text.Remove(tbDisplay.GetFirstCharIndexFromLine(tbDisplay.Lines.Length - 1), lastString.Length); // letzte Zeile löschen
-                    //tbDisplay.AppendText(lastString.Insert(0, "~"));
-                    tbDisplay.Text = "~" + tbDisplay.Text;
-                }
+                if (tbDisplay.Text != res1.ToString()) { tbDisplay.Text = "~" + tbDisplay.Text; }
+                //commented code for multiline textbox - not yet implemented!
+                //tbDisplay.Text = tbDisplay.Text.Remove(tbDisplay.GetFirstCharIndexFromLine(tbDisplay.Lines.Length - 1), lastString.Length); // letzte Zeile löschen
+                //tbDisplay.AppendText(lastString.Insert(0, "~"));
                 resultIsDisplayed = true; // wird benötigt um das Runden von Ausdrücken zu verhindern
                 tbDisplay.Select(tbDisplay.Text.Length, 0); // (Anfangsposition, Markierungslänge)
                 btnStdBack.Enabled = true;

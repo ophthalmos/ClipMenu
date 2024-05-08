@@ -27,7 +27,7 @@
                 if (!string.IsNullOrEmpty(data)) { textBox.Text = data; }
             }
             textBox.Focus();
-            textBox.SelectionStart = textBox.Text.Length;
+            textBox.SelectAll(); // textBox.SelectionStart = textBox.Text.Length; // Cursor ans Ende
         }
 
         protected override bool ProcessCmdKey(ref Message msg, Keys keyData)

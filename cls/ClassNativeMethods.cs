@@ -1,4 +1,5 @@
 ﻿using System.Runtime.InteropServices;
+using System.Text;
 
 namespace ClipMenu
 {
@@ -26,7 +27,8 @@ namespace ClipMenu
         internal const int EVENT_SYSTEM_MINIMIZEEND = 0x0017;
 
         internal const int WM_HOTKEY = 0x312;
-        internal const int HOTKEY_ID = 0x0312; // 0; // 42;
+        internal const int HOTKEY_ID1 = 0x0312;
+        internal const int HOTKEY_ID2 = 0x0313;
 
         internal const int WM_USER = 0x0400; // (Modal)ClipCalc.DecimalPlaces
         internal const int WM_CLIPEDIT_MSG = WM_USER + 1; // ClipEdit ⇒ ClipMenu.dontHide
@@ -303,6 +305,10 @@ namespace ClipMenu
 
         [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode, CallingConvention = CallingConvention.Cdecl)]
         private static extern int GetWindowTextLength(IntPtr hWnd);
+
+        [DllImport("user32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+        internal static extern int GetWindowText(IntPtr hWnd, StringBuilder lpString, int nMaxCount);
+
 
         internal static void WinEventProc(IntPtr hWinEventHook, uint eventType, IntPtr hwnd, int idObject, int idChild, uint dwEventThread, uint dwmsEventTime)
         { //https://devblogs.microsoft.com/oldnewthing/20130930-00/?p=3083 // if (hwnd && idObject == OBJID_WINDOW && idChild == CHILDID_SELF && event == EVENT_SYSTEM_FOREGROUND)

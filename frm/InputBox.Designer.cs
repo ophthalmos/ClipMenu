@@ -93,6 +93,7 @@
             StartPosition = FormStartPosition.CenterParent;
             Text = "ClipMenu";
             TopMost = true;
+            Load += InputBox_Load;
             ResumeLayout(false);
             PerformLayout();
         }
