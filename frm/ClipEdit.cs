@@ -95,7 +95,7 @@
                 }
                 else
                 {
-                    if (NativeMethods.SetForegroundWindow(NativeMethods.lastActiveWindow)) { NativeMethods.SendKeysPaste(); } //SendKeys.SendWait("^(v)");
+                    if (NativeMethods.SetForegroundWindow(NativeMethods.lastActiveWindow) || NativeMethods.GetForegroundWindow() != IntPtr.Zero) { NativeMethods.SendKeysPaste(); } //SendKeys.SendWait("^(v)");
                     Close();
                 }
             }
@@ -159,7 +159,11 @@
             NativeMethods.PostMessage(Application.OpenForms[0].Handle, NativeMethods.WM_CLIPEDIT_MSG, 0, 0); // dontHide false;
         }
 
-        private void DeleteAllToolStripMenuItem_Click(object sender, EventArgs e) { textBox.Clear(); }
+        private void DeleteAllToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            textBox.Clear();
+            textBox.Font = new Font(textBox.Font.FontFamily, 10);
+        }
 
         private void SendToolStripMenuItem_Click(object sender, EventArgs e) { SendContent(); }
 

@@ -2,6 +2,7 @@
 using System.Data;
 using System.Diagnostics;
 using System.Globalization;
+using System.Media;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml;
@@ -25,6 +26,7 @@ namespace ClipMenu
         private static readonly string appName = Application.ProductName; // "ClipMenu";
         private static readonly string assLctn = Path.Combine(AppContext.BaseDirectory, appName + ".exe");  // EXE-Pfad
         private bool ignoreClipboardChange;
+        //private bool ignoreClipboardFeedback;
         private readonly int maxDisplayChars = 196; // cave: größere Werte als 197 führen dazu das letzte Zeile nicht selektiert wird
         private readonly int maxTextLength = 2500000;
         private readonly string xmlPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), appName, appName + ".xml");
@@ -32,8 +34,13 @@ namespace ClipMenu
         private int maxItems = 50;
         private bool passwdExcld = true;
         private bool plainText = false;
+        private bool visualResponse = false;
+        private bool acousticResponse = false;
         private bool altTabRWin = false;
         private bool altTabXBtn = false;
+        private bool datesExpanded = true;
+        private bool snippetsExpanded = true;
+        private bool symbolsExpanded = true;
         private bool propertyExpanderExpanded = true;
         private bool workAround = false;
         private Tuple<int, int, TreeNode> deletedNodeTuple;
@@ -46,6 +53,7 @@ namespace ClipMenu
         private IntPtr hWinEventHook;
         private CheckBox newButton;
         private int decimalPlaces = -1;
+        private readonly string wavPath = Path.Combine(AppContext.BaseDirectory, appName + ".wav");
 
         public FrmClipMenu()
         {
@@ -114,6 +122,16 @@ namespace ClipMenu
                         checkBoxPlainText.Checked = plainText = bool.TryParse(element.Element("PasteAsPlain").Value, out plainText) && plainText;
                     }
 
+                    if (element.Element("VisualResponse") != null)
+                    {
+                        cbxVisualResponse.Checked = visualResponse = bool.TryParse(element.Element("VisualResponse").Value, out visualResponse) && visualResponse;
+                    }
+
+                    if (element.Element("AcousticResponse") != null)
+                    {
+                        cbxAcousticResponse.Checked = acousticResponse = bool.TryParse(element.Element("AcousticResponse").Value, out acousticResponse) && acousticResponse;
+                    }
+
                     if (element.Element("AltTabRWin") != null)
                     {
                         checkBoxRWin.Checked = altTabRWin = bool.TryParse(element.Element("AltTabRWin").Value, out altTabRWin) && altTabRWin;
@@ -122,6 +140,21 @@ namespace ClipMenu
                     if (element.Element("AltTabXBtn") != null)
                     {
                         checkBoxXButton.Checked = altTabXBtn = bool.TryParse(element.Element("AltTabXBtn").Value, out altTabXBtn) && altTabXBtn;
+                    }
+
+                    if (element.Element("DatesExpanded") != null)
+                    {
+                        datesExpanded = bool.TryParse(element.Element("DatesExpanded").Value, out datesExpanded) && datesExpanded;
+                    }
+
+                    if (element.Element("SnippetsExpanded") != null)
+                    {
+                        snippetsExpanded = bool.TryParse(element.Element("SnippetsExpanded").Value, out snippetsExpanded) && snippetsExpanded;
+                    }
+
+                    if (element.Element("SymbolsExpanded") != null)
+                    {
+                        symbolsExpanded = bool.TryParse(element.Element("SymbolsExpanded").Value, out symbolsExpanded) && symbolsExpanded;
                     }
 
                     if (element.Element("FormSize") != null && new Regex(@"^\d+,\d+$").Match(element.Element("FormSize").Value).Success)
@@ -170,7 +203,10 @@ namespace ClipMenu
                     }
                 }
                 if (!treeView.Nodes.ContainsKey("Symbols")) { treeView.Nodes.Add(new TreeNode() { Name = "Symbols", Text = "Zeichen", ToolTipText = "Strg+Z" }); }
-                treeView.ExpandAll();
+
+                if (datesExpanded) { treeView.Nodes[0].Expand(); } else { treeView.Nodes[0].Collapse(); }
+                if (snippetsExpanded) { treeView.Nodes[1].Expand(); } else { treeView.Nodes[1].Collapse(); }
+                if (symbolsExpanded) { treeView.Nodes[2].Expand(); } else { treeView.Nodes[2].Collapse(); }
 
                 foreach (XElement xElement in xDocument.Root.Descendants("Clips"))
                 {
@@ -207,6 +243,7 @@ namespace ClipMenu
             }
             catch { }
             LogEvent("FrmClipMenu_Load");
+            NativeMethods.SendMessage(snippetSearchBox.Control.Handle, NativeMethods.EM_SETCUEBANNER, 0, "Suche");
         }
 
         private void GlobalKeyboardHook_KeyDown(object sender, KeyEventArgs e)
@@ -370,7 +407,6 @@ namespace ClipMenu
                             Tuple<string, bool> tuple = Utilities.GetDateTimeNowFormatted(node.Text);
                             if (tuple != null && tuple.Item2) { node.Text = tuple.Item1; }
                         }
-                        treeView.Nodes["Dates"].Expand();
                     }
                 }
             }
@@ -675,6 +711,18 @@ namespace ClipMenu
             listBox.SelectedIndex = 0;
             listBox.EndUpdate();
             btnDeleteAll.Enabled = true;
+
+            if (visualResponse) //  && !ignoreClipboardFeedback
+            {
+                SplashForm frmSplash = new(text, 1000); // using geht nur mit ShowDialog
+                NativeMethods.ShowWindow(frmSplash.Handle, NativeMethods.SW_SHOWNOACTIVATE); // ohne TopMost!
+            }
+            if (acousticResponse && File.Exists(wavPath)) //  && !ignoreClipboardFeedback
+            {
+                using SoundPlayer player = new(wavPath);
+                player.Play();
+            }
+            //ignoreClipboardFeedback = false;
         }
 
         protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
@@ -869,8 +917,21 @@ namespace ClipMenu
             {
                 if (Clipboard.ContainsText())
                 {
+                    ignoreClipboardChange = true;
+
+                    if (!NativeMethods.SetForegroundWindow(NativeMethods.lastActiveWindow) || NativeMethods.GetForegroundWindow() == IntPtr.Zero) { Console.Beep(); }
                     Clipboard.SetText(Clipboard.GetText(TextDataFormat.UnicodeText));
+
+                    if (m.WParam == NativeMethods.HOTKEY_ID1) { NativeMethods.SendKeyUp(NativeMethods.KeyCode.KEY_V); }
+                    else if (m.WParam == NativeMethods.HOTKEY_ID2) { NativeMethods.SendKeyUp(NativeMethods.KeyCode.VK_INSERT); }
+                    NativeMethods.SendKeyUp(NativeMethods.KeyCode.VK_LCONTROL);
+                    NativeMethods.SendKeyUp(NativeMethods.KeyCode.VK_LSHIFT); // Andernfalls wird SendKeysPaste erst nach dem Loslassen erfolgen
+
                     NativeMethods.SendKeysPaste();
+                    NativeMethods.SendKeyUp(NativeMethods.KeyCode.VK_LCONTROL);
+                    NativeMethods.SendKeyUp(NativeMethods.KeyCode.VK_LSHIFT); // Ermöglicht, dass die Modifier-Tasten gedrückt bleiben
+                    NativeMethods.SendKeyDown(NativeMethods.KeyCode.VK_LCONTROL);
+                    NativeMethods.SendKeyDown(NativeMethods.KeyCode.VK_LSHIFT); // Ermöglicht, dass die Modifier-Tasten gedrückt bleiben
                 }
                 else { Utilities.ErrorMsgTaskDlg(Handle, "Die Zwischenablage enthält keinen Text!"); }
             }
@@ -889,8 +950,13 @@ namespace ClipMenu
             element.Add(new XElement("DecimalPlaces", decimalPlaces));
             element.Add(new XElement("PasswdExcld", passwdExcld.ToString()));
             element.Add(new XElement("PasteAsPlain", plainText.ToString()));
+            element.Add(new XElement("VisualResponse", visualResponse.ToString()));
+            element.Add(new XElement("AcousticResponse", acousticResponse.ToString()));
             element.Add(new XElement("AltTabRWin", altTabRWin.ToString()));
             element.Add(new XElement("AltTabXBtn", altTabXBtn.ToString()));
+            element.Add(new XElement("DatesExpanded", treeView.Nodes["Dates"].IsExpanded));
+            element.Add(new XElement("SnippetsExpanded", treeView.Nodes["Snippets"].IsExpanded));
+            element.Add(new XElement("SymbolsExpanded", treeView.Nodes["Symbols"].IsExpanded));
             element.Add(new XElement("FormSize", Width.ToString() + "," + Height.ToString()));
             return element;
         }
@@ -975,7 +1041,13 @@ namespace ClipMenu
                     dataTable.Rows.RemoveAt(index);
                     dataTable.AcceptChanges();
                     lboxTable = Utilities.DataTable2LBoxDataTable(dataTable, maxDisplayChars);
-                    if (NativeMethods.SetForegroundWindow(NativeMethods.lastActiveWindow))
+
+                    //Kalender:
+                    //IntPtr activeWindowHandle = NativeMethods.GetForegroundWindow();  // MessageBox.Show(NativeMethods.GetActiveWindowClass(activeWindowHandle));
+                    //if ((activeWindowHandle != null && !NativeMethods.GetActiveWindowClass(activeWindowHandle).Equals("Shell_TrayWnd")) || NativeMethods.SetForegroundWindow(NativeMethods.GetLastWinHandle(Handle))) { SendKeys.SendWait("^(v)"); }
+                    //else { System.Media.SystemSounds.Beep.Play(); }
+
+                    if (NativeMethods.SetForegroundWindow(NativeMethods.lastActiveWindow) || NativeMethods.GetForegroundWindow() != IntPtr.Zero)
                     {
                         NativeMethods.SendKeysPaste();
                         LogEvent("SendText: SendKeysPaste");
@@ -1001,7 +1073,7 @@ namespace ClipMenu
                     Utilities.ErrorMsgTaskDlg(Handle, "Es ist ein Fehler aufgetreten.\nVersuchen Sie es noch einmal.");
                     Show();
                 }
-                else if (NativeMethods.SetForegroundWindow(NativeMethods.lastActiveWindow))
+                if (NativeMethods.SetForegroundWindow(NativeMethods.lastActiveWindow) || NativeMethods.GetForegroundWindow() != IntPtr.Zero)
                 {
                     NativeMethods.SendKeysPaste();
                     LogEvent("SendSnippet: SendKeysPaste");
@@ -1309,7 +1381,7 @@ namespace ClipMenu
                     Utilities.NodeFiltering(treeView.Nodes[i - 1], snippetSearchBox.Text);
                 }
             }
-            treeView.ExpandAll();
+            treeView.Nodes[1].ExpandAll();
             treeView.EndUpdate();
         }
 
@@ -1528,7 +1600,14 @@ namespace ClipMenu
             catch { }
         }
 
+        private void CbxVisualResponse_CheckedChanged(object sender, EventArgs e)
+        {
+            if (cbxVisualResponse.Focused) { visualResponse = cbxVisualResponse.Checked; }
+        }
 
-
+        private void CbxAcousticResponse_CheckedChanged(object sender, EventArgs e)
+        {
+            if (cbxAcousticResponse.Focused) { acousticResponse = cbxAcousticResponse.Checked; }
+        }
     }
 }

@@ -94,6 +94,9 @@
             toolStripSeparator8 = new ToolStripSeparator();
             snippetSearchBox = new ToolStripTextBox();
             tabPage3 = new TabPage();
+            gbxClipboardChange = new GroupBox();
+            cbxAcousticResponse = new CheckBox();
+            cbxVisualResponse = new CheckBox();
             groupBox = new GroupBox();
             checkBoxPlainText = new CheckBox();
             checkBoxXButton = new CheckBox();
@@ -131,6 +134,7 @@
             snipMenuStrip.SuspendLayout();
             toolStrip.SuspendLayout();
             tabPage3.SuspendLayout();
+            gbxClipboardChange.SuspendLayout();
             groupBox.SuspendLayout();
             trayMenuStrip.SuspendLayout();
             statusStrip.SuspendLayout();
@@ -423,7 +427,7 @@
             treeView.ContextMenuStrip = snipMenuStrip;
             treeView.Dock = DockStyle.Fill;
             treeView.LabelEdit = true;
-            treeView.Location = new Point(3, 29);
+            treeView.Location = new Point(3, 48);
             treeView.Name = "treeView";
             treeNode1.Name = "Date1";
             treeNode1.Text = "1.3.";
@@ -451,7 +455,7 @@
             treeNode12.Text = "Zeichen";
             treeView.Nodes.AddRange(new TreeNode[] { treeNode8, treeNode10, treeNode12 });
             treeView.ShowNodeToolTips = true;
-            treeView.Size = new Size(316, 479);
+            treeView.Size = new Size(316, 460);
             treeView.TabIndex = 0;
             treeView.BeforeLabelEdit += TreeView_BeforeLabelEdit;
             treeView.AfterLabelEdit += TreeView_AfterLabelEdit;
@@ -521,7 +525,7 @@
             toolStrip.LayoutStyle = ToolStripLayoutStyle.Flow;
             toolStrip.Location = new Point(3, 3);
             toolStrip.Name = "toolStrip";
-            toolStrip.Size = new Size(316, 26);
+            toolStrip.Size = new Size(316, 45);
             toolStrip.TabIndex = 1;
             // 
             // tsButtonNew
@@ -622,6 +626,7 @@
             // 
             // tabPage3
             // 
+            tabPage3.Controls.Add(gbxClipboardChange);
             tabPage3.Controls.Add(groupBox);
             tabPage3.Controls.Add(lblMaxComment);
             tabPage3.Controls.Add(lblPasswords);
@@ -640,15 +645,51 @@
             tabPage3.ToolTipText = "Strg+E";
             tabPage3.UseVisualStyleBackColor = true;
             // 
+            // gbxClipboardChange
+            // 
+            gbxClipboardChange.Controls.Add(cbxAcousticResponse);
+            gbxClipboardChange.Controls.Add(cbxVisualResponse);
+            gbxClipboardChange.Font = new Font("Segoe UI", 9F);
+            gbxClipboardChange.Location = new Point(8, 297);
+            gbxClipboardChange.Name = "gbxClipboardChange";
+            gbxClipboardChange.Size = new Size(306, 47);
+            gbxClipboardChange.TabIndex = 14;
+            gbxClipboardChange.TabStop = false;
+            gbxClipboardChange.Text = "Signalisierung neuer Verlaufeinträge";
+            // 
+            // cbxAcousticResponse
+            // 
+            cbxAcousticResponse.AutoSize = true;
+            cbxAcousticResponse.Font = new Font("Segoe UI", 10F);
+            cbxAcousticResponse.Location = new Point(123, 18);
+            cbxAcousticResponse.Name = "cbxAcousticResponse";
+            cbxAcousticResponse.Size = new Size(84, 23);
+            cbxAcousticResponse.TabIndex = 1;
+            cbxAcousticResponse.Text = "akustisch";
+            cbxAcousticResponse.UseVisualStyleBackColor = true;
+            cbxAcousticResponse.CheckedChanged += CbxAcousticResponse_CheckedChanged;
+            // 
+            // cbxVisualResponse
+            // 
+            cbxVisualResponse.AutoSize = true;
+            cbxVisualResponse.Font = new Font("Segoe UI", 10F);
+            cbxVisualResponse.Location = new Point(13, 18);
+            cbxVisualResponse.Name = "cbxVisualResponse";
+            cbxVisualResponse.Size = new Size(65, 23);
+            cbxVisualResponse.TabIndex = 0;
+            cbxVisualResponse.Text = "visuell";
+            cbxVisualResponse.UseVisualStyleBackColor = true;
+            cbxVisualResponse.CheckedChanged += CbxVisualResponse_CheckedChanged;
+            // 
             // groupBox
             // 
             groupBox.Controls.Add(checkBoxPlainText);
             groupBox.Controls.Add(checkBoxXButton);
             groupBox.Controls.Add(checkBoxRWin);
             groupBox.Font = new Font("Segoe UI", 9F);
-            groupBox.Location = new Point(8, 313);
+            groupBox.Location = new Point(8, 354);
             groupBox.Name = "groupBox";
-            groupBox.Size = new Size(306, 110);
+            groupBox.Size = new Size(306, 105);
             groupBox.TabIndex = 13;
             groupBox.TabStop = false;
             groupBox.Text = "Zusätzliche Funktionen (Änderung nach Neustart)";
@@ -657,7 +698,7 @@
             // 
             checkBoxPlainText.AutoSize = true;
             checkBoxPlainText.Font = new Font("Segoe UI", 10F);
-            checkBoxPlainText.Location = new Point(5, 22);
+            checkBoxPlainText.Location = new Point(13, 22);
             checkBoxPlainText.Name = "checkBoxPlainText";
             checkBoxPlainText.Size = new Size(278, 23);
             checkBoxPlainText.TabIndex = 2;
@@ -669,7 +710,7 @@
             // 
             checkBoxXButton.AutoSize = true;
             checkBoxXButton.Font = new Font("Segoe UI", 10F);
-            checkBoxXButton.Location = new Point(5, 80);
+            checkBoxXButton.Location = new Point(13, 76);
             checkBoxXButton.Name = "checkBoxXButton";
             checkBoxXButton.Size = new Size(266, 23);
             checkBoxXButton.TabIndex = 1;
@@ -681,7 +722,7 @@
             // 
             checkBoxRWin.AutoSize = true;
             checkBoxRWin.Font = new Font("Segoe UI", 10F);
-            checkBoxRWin.Location = new Point(5, 51);
+            checkBoxRWin.Location = new Point(13, 49);
             checkBoxRWin.Name = "checkBoxRWin";
             checkBoxRWin.Size = new Size(264, 23);
             checkBoxRWin.TabIndex = 0;
@@ -692,7 +733,7 @@
             // lblMaxComment
             // 
             lblMaxComment.Font = new Font("Segoe UI", 9F);
-            lblMaxComment.Location = new Point(13, 121);
+            lblMaxComment.Location = new Point(13, 115);
             lblMaxComment.Name = "lblMaxComment";
             lblMaxComment.Size = new Size(301, 38);
             lblMaxComment.TabIndex = 12;
@@ -701,7 +742,7 @@
             // lblPasswords
             // 
             lblPasswords.Font = new Font("Segoe UI", 9F);
-            lblPasswords.Location = new Point(13, 194);
+            lblPasswords.Location = new Point(13, 179);
             lblPasswords.Name = "lblPasswords";
             lblPasswords.Size = new Size(301, 112);
             lblPasswords.TabIndex = 11;
@@ -710,7 +751,7 @@
             // lblAutostart
             // 
             lblAutostart.Font = new Font("Segoe UI", 9F);
-            lblAutostart.Location = new Point(13, 35);
+            lblAutostart.Location = new Point(13, 32);
             lblAutostart.Name = "lblAutostart";
             lblAutostart.Size = new Size(301, 50);
             lblAutostart.TabIndex = 10;
@@ -720,7 +761,7 @@
             // 
             ckbRegex.AutoSize = true;
             ckbRegex.Font = new Font("Segoe UI", 10F);
-            ckbRegex.Location = new Point(13, 168);
+            ckbRegex.Location = new Point(8, 157);
             ckbRegex.Name = "ckbRegex";
             ckbRegex.Size = new Size(269, 23);
             ckbRegex.TabIndex = 9;
@@ -732,7 +773,7 @@
             // 
             btnStandardSize.Enabled = false;
             btnStandardSize.Font = new Font("Segoe UI", 10F);
-            btnStandardSize.Location = new Point(8, 444);
+            btnStandardSize.Location = new Point(8, 465);
             btnStandardSize.Name = "btnStandardSize";
             btnStandardSize.Size = new Size(306, 34);
             btnStandardSize.TabIndex = 8;
@@ -745,7 +786,7 @@
             // 
             lblMaxItems.AutoSize = true;
             lblMaxItems.Font = new Font("Segoe UI", 10F);
-            lblMaxItems.Location = new Point(13, 97);
+            lblMaxItems.Location = new Point(5, 90);
             lblMaxItems.Name = "lblMaxItems";
             lblMaxItems.Size = new Size(220, 19);
             lblMaxItems.TabIndex = 3;
@@ -757,7 +798,7 @@
             cbxMaxItems.Font = new Font("Segoe UI", 10F);
             cbxMaxItems.FormattingEnabled = true;
             cbxMaxItems.Items.AddRange(new object[] { "10", "20", "30", "40", "50", "60", "70", "80", "90", "100" });
-            cbxMaxItems.Location = new Point(239, 94);
+            cbxMaxItems.Location = new Point(234, 87);
             cbxMaxItems.MaxLength = 2;
             cbxMaxItems.Name = "cbxMaxItems";
             cbxMaxItems.Size = new Size(60, 25);
@@ -768,7 +809,7 @@
             // 
             linkLabel.AutoSize = true;
             linkLabel.Font = new Font("Segoe UI", 10F);
-            linkLabel.Location = new Point(180, 10);
+            linkLabel.Location = new Point(178, 11);
             linkLabel.Name = "linkLabel";
             linkLabel.Size = new Size(118, 19);
             linkLabel.TabIndex = 1;
@@ -780,7 +821,7 @@
             // 
             ckbAutoStart.AutoSize = true;
             ckbAutoStart.Font = new Font("Segoe UI", 10F);
-            ckbAutoStart.Location = new Point(13, 9);
+            ckbAutoStart.Location = new Point(8, 10);
             ckbAutoStart.Name = "ckbAutoStart";
             ckbAutoStart.Size = new Size(174, 23);
             ckbAutoStart.TabIndex = 0;
@@ -934,6 +975,8 @@
             toolStrip.PerformLayout();
             tabPage3.ResumeLayout(false);
             tabPage3.PerformLayout();
+            gbxClipboardChange.ResumeLayout(false);
+            gbxClipboardChange.PerformLayout();
             groupBox.ResumeLayout(false);
             groupBox.PerformLayout();
             trayMenuStrip.ResumeLayout(false);
@@ -1025,5 +1068,8 @@
         private ToolStripMenuItem downToolStripMenuItem;
         private ToolStripSeparator toolStripSeparator13;
         private ToolStripMenuItem removeToolStripMenuItem;
+        private GroupBox gbxClipboardChange;
+        private CheckBox cbxVisualResponse;
+        private CheckBox cbxAcousticResponse;
     }
 }

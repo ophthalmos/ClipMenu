@@ -15,7 +15,7 @@ namespace ClipMenu
     {
         internal static void HelpMsgTaskDlg(IntPtr hwnd, Icon icon)
         {
-        string foot = "              © " + GetBuildDate().ToString("yyyy") + " Wilhelm Happe, Version " + Assembly.GetExecutingAssembly().GetName().Version.ToString();
+            string foot = "              © " + GetBuildDate().ToString("yyyy") + " Wilhelm Happe, Version " + Assembly.GetExecutingAssembly().GetName().Version.ToString();
             string msg = "Tastenkombinationen:" + Environment.NewLine +
                 "¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯" + Environment.NewLine +
                 "Strg+Win+V:        Anzeigen des Programmfensters" + Environment.NewLine +
@@ -74,6 +74,14 @@ namespace ClipMenu
             return newTable;
         }
 
+        internal static string LimitedSubstr(string text, int maxLength)
+        {
+            if (text.Length <= maxLength) { return text; }
+            int lastSpaceIndex = text.LastIndexOf(' ', maxLength - 1);
+            if (lastSpaceIndex != -1 && lastSpaceIndex > maxLength / 2) { return text[..lastSpaceIndex] + "…"; }
+            else { return text[..maxLength] + "…"; }
+        }
+
         internal static string PrepareText2ListBox(string text, int maxLength)
         {
             text = text.Replace("  ", " ").Trim();
@@ -96,9 +104,13 @@ namespace ClipMenu
 
         public static string RemoveInvalidCalculationChars(string text)
         {
-            text = new string(text.Where(c => char.IsDigit(c) || c == '.' || c == ',' || c == '+' || c == '-' || c == '(' || c == ')' || c == '*' ||
-            c == '/' || c == '÷' || c == '×' || c == 'x' || c == '^' || c == ':').ToArray());
-            return text.Replace('.', ',').Replace('÷', '/').Replace(':', '/').Replace("\n", " "); ;
+            if (new Regex(@"^0[×|x][a-zA-Z0-9]+$").Match(text.Trim()).Success) { return text.Trim(); }
+            else
+            {
+                text = new string(text.Where(c => char.IsDigit(c) || c == '.' || c == ',' || c == '+' || c == '-' || c == '(' || c == ')' || c == '*' ||
+                    c == '/' || c == '÷' || c == '×' || c == 'x' || c == '^' || c == ':').ToArray());
+                return text.Replace('.', ',').Replace('÷', '/').Replace(':', '/').Replace("\n", " "); ;
+            }
         }
 
         //public static string RemoveInvalidXmlChars(string text)

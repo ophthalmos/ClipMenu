@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel;
 using System.Text.RegularExpressions;
-using System.Xml.Linq;
 
 namespace ClipMenu
 {
@@ -252,7 +251,7 @@ namespace ClipMenu
                 }
                 else
                 {
-                    if (NativeMethods.SetForegroundWindow(NativeMethods.lastActiveWindow)) { NativeMethods.SendKeysPaste(); }
+                    if (NativeMethods.SetForegroundWindow(NativeMethods.lastActiveWindow) || NativeMethods.GetForegroundWindow() != IntPtr.Zero) { NativeMethods.SendKeysPaste(); }
                 }
             }
             catch (Exception ex) when (ex is NullReferenceException) { }

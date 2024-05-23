@@ -41,6 +41,15 @@
     </EmbeddedResource>
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="Clipboard.wav">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="ClipMenu.wav">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
     <Exec Command="REM xcopy &quot;$(TargetPath)&quot; &quot;C:\Tools\ClipMenu\&quot; /y&#xD;&#xA;REM xcopy &quot;$(TargetDir)\*.exe&quot; &quot;C:\Tools\ClipMenu\&quot; /y" />
   </Target>

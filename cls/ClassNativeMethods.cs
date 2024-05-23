@@ -5,13 +5,16 @@ namespace ClipMenu
 {
     internal static class NativeMethods
     {
+        internal const int EM_SETCUEBANNER = 0x1501;
         internal const int EC_LEFTMARGIN = 0x1;
         internal const int EM_SETMARGINS = 0xD3;
+        internal const int SW_SHOWNOACTIVATE = 4; // similar to SW_SHOWNORMAL, except that the window is not activated.
         internal const int WM_CLIPBOARDUPDATE = 0x031D;
-        private const int WM_KEYDOWN = 0x0100; // 256
         internal const int VK_LCONTROL = 0xA2;
         internal const int VK_LSHIFT = 0xA0; //	Linke UMSCHALTTASTE
         internal const int VK_LWIN = 0x5B;
+
+        private const int WM_KEYDOWN = 0x0100; // 256
         private const int WM_XBUTTONDOWN = 0x20B;
         private const int WM_XBUTTONUP = 0x020C;
         private const int HC_ACTION = 0;
@@ -60,6 +63,9 @@ namespace ClipMenu
         [DllImport("user32.dll")]
         internal static extern IntPtr GetForegroundWindow();
 
+        [DllImport("user32.dll")]
+        internal static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+
         internal static event KeyEventHandler KeyDown;
 
         [StructLayout(LayoutKind.Sequential)]
@@ -95,6 +101,9 @@ namespace ClipMenu
 
         [DllImport("User32.dll", EntryPoint = "SendMessage", CharSet = CharSet.Unicode)]
         internal static extern IntPtr SendMessage(IntPtr hWnd, int Msg, IntPtr wParam, IntPtr lParam);
+
+        [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+        internal static extern IntPtr SendMessage(IntPtr hWnd, int msg, int wParam, string lParam);
 
         [return: MarshalAs(UnmanagedType.Bool)]
         [DllImport("user32.dll", CharSet = CharSet.Unicode)]

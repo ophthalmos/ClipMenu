@@ -45,6 +45,7 @@ Name: "German"; MessagesFile: "compiler:Languages\German.isl"
 [Files]
 Source: "bin\x64\Release\net8.0-windows\ClipMenu.exe"; DestDir: "{app}"; Permissions: users-modify; Flags: ignoreversion
 Source: "bin\x64\Release\net8.0-windows\{#MyAppName}.dll"; DestDir: "{app}"; Permissions: users-modify; Flags: ignoreversion
+Source: "bin\x64\Release\net8.0-windows\{#MyAppName}.wav"; DestDir: "{app}"; Permissions: users-modify; Flags: ignoreversion
 Source: "bin\x64\Release\net8.0-windows\{#MyAppName}.runtimeconfig.json"; DestDir: "{app}"; Permissions: users-modify; Flags: ignoreversion
 Source: "Lizenzvereinbarung.txt"; DestDir: "{app}"; Permissions: users-modify;
 
