@@ -249,10 +249,7 @@ namespace ClipMenu
                     Utilities.ErrorMsgTaskDlg(Handle, "Es ist ein Fehler aufgetreten.\nVersuchen Sie es noch einmal.");
                     Show();
                 }
-                else
-                {
-                    if (NativeMethods.SetForegroundWindow(NativeMethods.lastActiveWindow) || NativeMethods.GetForegroundWindow() != IntPtr.Zero) { NativeMethods.SendKeysPaste(); }
-                }
+                else { NativeMethods.SendKeysPaste(); }
             }
             catch (Exception ex) when (ex is NullReferenceException) { }
             finally { Close(); }

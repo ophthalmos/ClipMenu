@@ -120,18 +120,23 @@ namespace ClipMenu
             SendKeyUp(KeyCode.VK_RCONTROL);
         }
 
-        internal static void SendKeysPaste()
+        internal static bool SendKeysPaste() // Tuple<bool, string> 
         {
-            SendKeyDown(KeyCode.VK_CONTROL);
-            SendKeyDown(KeyCode.KEY_V);
-            //SendKeyDown(KeyCode.VK_SHIFT);
-            //SendKeyDown(KeyCode.VK_INSERT);
-            Thread.Sleep(70);
-            //SendKeyUp(KeyCode.VK_INSERT);
-            //SendKeyUp(KeyCode.VK_SHIFT);
-            SendKeyUp(KeyCode.KEY_V);
-            SendKeyUp(KeyCode.VK_CONTROL);
-            //Thread.Sleep(50);
+            if (SetForegroundWindow(lastActiveWindow) || SetForegroundWindow(GetForegroundWindow()))
+            {
+                SendKeyDown(KeyCode.VK_CONTROL);
+                SendKeyDown(KeyCode.KEY_V);
+                //SendKeyDown(KeyCode.VK_SHIFT);
+                //SendKeyDown(KeyCode.VK_INSERT);
+                Thread.Sleep(70);
+                //SendKeyUp(KeyCode.VK_INSERT);
+                //SendKeyUp(KeyCode.VK_SHIFT);
+                SendKeyUp(KeyCode.KEY_V);
+                SendKeyUp(KeyCode.VK_CONTROL);
+                //Thread.Sleep(50);
+                return true;
+            }
+            return false;
         }
 
         internal static void SendKeysAltTab()

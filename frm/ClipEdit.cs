@@ -95,7 +95,7 @@
                 }
                 else
                 {
-                    if (NativeMethods.SetForegroundWindow(NativeMethods.lastActiveWindow) || NativeMethods.GetForegroundWindow() != IntPtr.Zero) { NativeMethods.SendKeysPaste(); } //SendKeys.SendWait("^(v)");
+                    NativeMethods.SendKeysPaste();  //SendKeys.SendWait("^(v)");
                     Close();
                 }
             }

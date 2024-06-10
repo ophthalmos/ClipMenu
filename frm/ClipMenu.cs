@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Data;
 using System.Diagnostics;
+using System.Drawing.Drawing2D;
 using System.Globalization;
 using System.Media;
 using System.Text;
@@ -54,6 +55,7 @@ namespace ClipMenu
         private CheckBox newButton;
         private int decimalPlaces = -1;
         private readonly string wavPath = Path.Combine(AppContext.BaseDirectory, appName + ".wav");
+        private List<string> listOfKnownColors = [];
 
         public FrmClipMenu()
         {
@@ -68,6 +70,7 @@ namespace ClipMenu
                 logPath = Path.ChangeExtension(assLctn, ".log");
             }
             cbxMaxItems.SelectedIndex = cbxMaxItems.FindString(maxItems.ToString()); // Default (lässt sich nicht im Designer einstellen)
+            foreach (KnownColor color in Enum.GetValues(typeof(KnownColor))) { listOfKnownColors.Add(Color.FromKnownColor(color).Name.ToLower()); }
         }
 
         private void FrmClipMenu_Load(object sender, EventArgs e)
@@ -519,6 +522,8 @@ namespace ClipMenu
                 }
                 e.DrawBackground(); // Draw the background of the ListBox control for each item.
                 using Graphics gfx = e.Graphics;
+                gfx.SmoothingMode = SmoothingMode.AntiAlias;
+                gfx.CompositingQuality = CompositingQuality.HighQuality;
                 gfx.DrawString(number.ToString() + ".", e.Font, Brushes.Black, e.Bounds.X + horizMargins, e.Bounds.Y + vertMargins);
                 int addIndent = number.ToString().Length * indentAdd; // damit mehrstellige Zahlen Platz haben
                 gfx.DrawString(xcaption, e.Font, isSelected ? Brushes.White : Brushes.SteelBlue, e.Bounds.X + horizMargins + indentWidth + addIndent, e.Bounds.Y + vertMargins);
@@ -537,6 +542,16 @@ namespace ClipMenu
                 else
                 {
                     int lBoxWidth = listBox.ClientSize.Width - SystemInformation.BorderSize.Width * 2 - horizMargins - indentWidth - addIndent - SystemInformation.VerticalScrollBarWidth; // 22 = Einrückung
+                    if (listOfKnownColors.Contains(dtext.ToLower()))
+                    {
+                        gfx.FillEllipse(new SolidBrush(Color.FromName(dtext)), lBoxWidth, e.Bounds.Y + vertMargins + lineHeight + distance, 15, 15);
+                    }
+                    else if (new Regex(@"^#?(([0-9a-fA-F]{2}){3}|([0-9a-fA-F]){3})$").Match(dtext).Success)
+                    {
+                        Color color = ColorTranslator.FromHtml(dtext.StartsWith('#') ? dtext : "#" + dtext);
+                        gfx.FillEllipse(new SolidBrush(color), lBoxWidth, e.Bounds.Y + vertMargins + lineHeight + distance, 15, 15);
+                    }
+
                     string[] lines = dtext.Split('\n');
                     int offset = 0;
                     foreach (string line in lines)
@@ -919,7 +934,7 @@ namespace ClipMenu
                 {
                     ignoreClipboardChange = true;
 
-                    if (!NativeMethods.SetForegroundWindow(NativeMethods.lastActiveWindow) || NativeMethods.GetForegroundWindow() == IntPtr.Zero) { Console.Beep(); }
+                    //if (!NativeMethods.SetForegroundWindow(NativeMethods.lastActiveWindow) || NativeMethods.GetForegroundWindow() == IntPtr.Zero) { Console.Beep(); }
                     Clipboard.SetText(Clipboard.GetText(TextDataFormat.UnicodeText));
 
                     if (m.WParam == NativeMethods.HOTKEY_ID1) { NativeMethods.SendKeyUp(NativeMethods.KeyCode.KEY_V); }
@@ -927,7 +942,9 @@ namespace ClipMenu
                     NativeMethods.SendKeyUp(NativeMethods.KeyCode.VK_LCONTROL);
                     NativeMethods.SendKeyUp(NativeMethods.KeyCode.VK_LSHIFT); // Andernfalls wird SendKeysPaste erst nach dem Loslassen erfolgen
 
-                    NativeMethods.SendKeysPaste();
+                    if (NativeMethods.SendKeysPaste()) { LogEvent("WM_HOTKEY: SendKeysPaste"); }
+                    else { LogEvent("WM_HOTKEY: destination not found"); }
+
                     NativeMethods.SendKeyUp(NativeMethods.KeyCode.VK_LCONTROL);
                     NativeMethods.SendKeyUp(NativeMethods.KeyCode.VK_LSHIFT); // Ermöglicht, dass die Modifier-Tasten gedrückt bleiben
                     NativeMethods.SendKeyDown(NativeMethods.KeyCode.VK_LCONTROL);
@@ -1047,11 +1064,7 @@ namespace ClipMenu
                     //if ((activeWindowHandle != null && !NativeMethods.GetActiveWindowClass(activeWindowHandle).Equals("Shell_TrayWnd")) || NativeMethods.SetForegroundWindow(NativeMethods.GetLastWinHandle(Handle))) { SendKeys.SendWait("^(v)"); }
                     //else { System.Media.SystemSounds.Beep.Play(); }
 
-                    if (NativeMethods.SetForegroundWindow(NativeMethods.lastActiveWindow) || NativeMethods.GetForegroundWindow() != IntPtr.Zero)
-                    {
-                        NativeMethods.SendKeysPaste();
-                        LogEvent("SendText: SendKeysPaste");
-                    }
+                    if (NativeMethods.SendKeysPaste()) { LogEvent("SendText: SendKeysPaste"); }
                     else { LogEvent("SendText: ERROR"); }
                 }
                 else { Utilities.ErrorMsgTaskDlg(Handle, "Der Text wurde nicht gefunden!"); }
@@ -1073,11 +1086,7 @@ namespace ClipMenu
                     Utilities.ErrorMsgTaskDlg(Handle, "Es ist ein Fehler aufgetreten.\nVersuchen Sie es noch einmal.");
                     Show();
                 }
-                if (NativeMethods.SetForegroundWindow(NativeMethods.lastActiveWindow) || NativeMethods.GetForegroundWindow() != IntPtr.Zero)
-                {
-                    NativeMethods.SendKeysPaste();
-                    LogEvent("SendSnippet: SendKeysPaste");
-                }
+                if (NativeMethods.SendKeysPaste()) { LogEvent("SendSnippet: SendKeysPaste"); }
                 else { LogEvent("SendSnippet: ERROR"); }
             }
             catch (Exception ex) when (ex is NullReferenceException) { }
