@@ -3,10 +3,12 @@
     public partial class FrmClipEdit : Form
     {
         public TextBox ClipEditTextBox { get { return textBox; } }
+        private readonly string logPath;
 
-        public FrmClipEdit()
+        public FrmClipEdit(string path)
         {
             InitializeComponent();
+            logPath = path;
         }
 
         private void FrmClipEdite_Load(object sender, EventArgs e)
@@ -95,7 +97,9 @@
                 }
                 else
                 {
-                    NativeMethods.SendKeysPaste();  //SendKeys.SendWait("^(v)");
+                    if (NativeMethods.SendKeysPaste()) { Utilities.LogEvent("SendText: SendKeysPaste", logPath); }
+                    else { Utilities.LogEvent("SendText: ERROR", logPath); }
+                    Application.DoEvents();
                     Close();
                 }
             }

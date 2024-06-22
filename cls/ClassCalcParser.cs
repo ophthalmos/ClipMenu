@@ -1,6 +1,7 @@
 ﻿/* https://www.codeproject.com/Articles/21137/Inside-the-Mathematical-Expressions-Evaluator */
 using System.Text;
 using System.Text.RegularExpressions;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace ClipMenu
 {
@@ -34,6 +35,7 @@ namespace ClipMenu
             expr = expr.ToLower().Replace("~", ""); // muss vor Math.PI und Math.E stehen; String.Replace ist immer Case-Sensitive!
             expr = expr.Replace("pi", Math.PI.ToString());
             expr = expr.Replace("e", Math.E.ToString());
+            while (Regex.IsMatch(expr, @"\d+\.\d+(\.|\,)\d+")) { expr = new Regex(Regex.Escape(".")).Replace(expr, "", 1); } // remove thousand separator point
             expr = expr.Replace(',', '.'); // muss nach Math.PI und Math.E stehen!
             Reset();
             expression = expr;

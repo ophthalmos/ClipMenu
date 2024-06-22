@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.Drawing.Drawing2D;
 using System.Globalization;
 using System.Media;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml;
 using System.Xml.Linq;
@@ -245,7 +244,7 @@ namespace ClipMenu
                 writer.Write(""); // Datei leeren
             }
             catch { }
-            LogEvent("FrmClipMenu_Load");
+            Utilities.LogEvent("FrmClipMenu_Load", logPath);
             NativeMethods.SendMessage(snippetSearchBox.Control.Handle, NativeMethods.EM_SETCUEBANNER, 0, "Suche");
         }
 
@@ -289,7 +288,7 @@ namespace ClipMenu
             {
                 if (Visible) { dontHide = newButton.Checked = true; } // s. FrmClipMenu_Deactivate
                 if (Utilities.IsEditOpen) { Application.OpenForms["FrmClipEdit"]?.Activate(); }
-                else { new FrmClipEdit().Show(); BringToFront(); Activate(); } // Application.OpenForms["FrmClipEdit"] != null
+                else { new FrmClipEdit(logPath).Show(); }
             }
             else if (e.KeyCode == Keys.RWin) { NativeMethods.SendKeysAltTab(); }
             e.Handled = true;
@@ -942,8 +941,8 @@ namespace ClipMenu
                     NativeMethods.SendKeyUp(NativeMethods.KeyCode.VK_LCONTROL);
                     NativeMethods.SendKeyUp(NativeMethods.KeyCode.VK_LSHIFT); // Andernfalls wird SendKeysPaste erst nach dem Loslassen erfolgen
 
-                    if (NativeMethods.SendKeysPaste()) { LogEvent("WM_HOTKEY: SendKeysPaste"); }
-                    else { LogEvent("WM_HOTKEY: destination not found"); }
+                    if (NativeMethods.SendKeysPaste()) { Utilities.LogEvent("WM_HOTKEY: SendKeysPaste", logPath); }
+                    else { Utilities.LogEvent("WM_HOTKEY: destination not found", logPath); }
 
                     NativeMethods.SendKeyUp(NativeMethods.KeyCode.VK_LCONTROL);
                     NativeMethods.SendKeyUp(NativeMethods.KeyCode.VK_LSHIFT); // Ermöglicht, dass die Modifier-Tasten gedrückt bleiben
@@ -999,7 +998,7 @@ namespace ClipMenu
             }
             Show(); // auf InsertClipboard warten
             timer.Enabled = true; //new Thread(new ThreadStart(ThreadJob)) { IsBackground = true }.Start(); // führte auf langsamem PC zum Absturz
-            LogEvent("CopyStripMenuItem_Click");
+            Utilities.LogEvent("CopyStripMenuItem_Click", logPath);
         }
 
         private void ExitToolStripMenuItem_Click(object sender, EventArgs e) { Application.Exit(); }
@@ -1064,8 +1063,8 @@ namespace ClipMenu
                     //if ((activeWindowHandle != null && !NativeMethods.GetActiveWindowClass(activeWindowHandle).Equals("Shell_TrayWnd")) || NativeMethods.SetForegroundWindow(NativeMethods.GetLastWinHandle(Handle))) { SendKeys.SendWait("^(v)"); }
                     //else { System.Media.SystemSounds.Beep.Play(); }
 
-                    if (NativeMethods.SendKeysPaste()) { LogEvent("SendText: SendKeysPaste"); }
-                    else { LogEvent("SendText: ERROR"); }
+                    if (NativeMethods.SendKeysPaste()) { Utilities.LogEvent("SendText: SendKeysPaste", logPath); }
+                    else { Utilities.LogEvent("SendText: ERROR", logPath); }
                 }
                 else { Utilities.ErrorMsgTaskDlg(Handle, "Der Text wurde nicht gefunden!"); }
             }
@@ -1086,8 +1085,8 @@ namespace ClipMenu
                     Utilities.ErrorMsgTaskDlg(Handle, "Es ist ein Fehler aufgetreten.\nVersuchen Sie es noch einmal.");
                     Show();
                 }
-                if (NativeMethods.SendKeysPaste()) { LogEvent("SendSnippet: SendKeysPaste"); }
-                else { LogEvent("SendSnippet: ERROR"); }
+                if (NativeMethods.SendKeysPaste()) { Utilities.LogEvent("SendSnippet: SendKeysPaste", logPath); }
+                else { Utilities.LogEvent("SendSnippet: ERROR", logPath); }
             }
             catch (Exception ex) when (ex is NullReferenceException) { }
         }
@@ -1114,6 +1113,8 @@ namespace ClipMenu
         private void ContextMenuStrip_Opening(object sender, CancelEventArgs e)
         {
             if (listBox.SelectedIndex == -1) { e.Cancel = true; }
+            else if (lboxTable.Rows[listBox.SelectedIndex]["Type"].ToString().Equals("image")) { snippetToolStripMenuItem.Text = "Anzeigen"; }
+            else { snippetToolStripMenuItem.Text = "Sammeln"; }
         }
 
         private void CbAutoStart_CheckedChanged(object sender, EventArgs e)
@@ -1258,21 +1259,34 @@ namespace ClipMenu
             DataRow foundRow = dataTable.AsEnumerable().SingleOrDefault(r => r.Field<DateTime>("Time").Equals(lboxTable.Rows[listBox.SelectedIndex]["Time"]));
             if (foundRow != null)
             {
-                string foundText = foundRow["Text"].ToString();
-                TreeNode snippetNode = treeView.Nodes.Find(foundText.Length.Equals(1) && !char.IsDigit(foundText[0]) && !char.IsLetter(foundText[0]) ? "Symbols" : DateTime.TryParse(foundText, out _) ? "Dates" : "Snippets", true)[0];
-                if (snippetNode != null)
+                if (foundRow["Type"].ToString().Equals("image"))
                 {
-                    dontHide = true;
-                    string userInput = string.Empty;
-                    InputBox inputBox = new(foundText[0].ToString(), "Bitte geben Sie einen ToolTipText ein:");
-                    if (inputBox.ShowDialog(this) == DialogResult.OK) { userInput = inputBox.InputTextBox.Text; }
-                    dontHide = false;
-                    TreeNode newChildNode = new() { Name = $"{snippetNode.Name[..^1]}999", Text = foundText, ToolTipText = userInput };
-                    snippetNode.Nodes.Add(newChildNode);
-                    for (int i = 0; i < snippetNode.Nodes.Count; i++) { snippetNode.Nodes[i].Name = Regex.Replace(snippetNode.Nodes[i].Name, @"\d+$", i.ToString()); } // tidy up node names
-                    treeView.SelectedNode = newChildNode;
-                    snippetNode.ExpandAll();
-                    tabControl.SelectedIndex = 1;  //toolStripStatusLabel.Text = Utilities.CountChildNodes(treeView);
+                    Image image = Image.FromStream(new MemoryStream(Convert.FromBase64String(foundRow["Text"].ToString())));
+                    if (image != null)
+                    {
+                        dontHide = true;
+                        using ImageView f = new(image);
+                        f.ShowDialog();
+                    }
+                }
+                else
+                {
+                    string foundText = foundRow["Text"].ToString();
+                    TreeNode snippetNode = treeView.Nodes.Find(foundText.Length.Equals(1) && !char.IsDigit(foundText[0]) && !char.IsLetter(foundText[0]) ? "Symbols" : DateTime.TryParse(foundText, out _) ? "Dates" : "Snippets", true)[0];
+                    if (snippetNode != null)
+                    {
+                        dontHide = true;
+                        string userInput = string.Empty;
+                        InputBox inputBox = new(foundText[0].ToString(), "Bitte geben Sie einen ToolTipText ein:");
+                        if (inputBox.ShowDialog(this) == DialogResult.OK) { userInput = inputBox.InputTextBox.Text; }
+                        dontHide = false;
+                        TreeNode newChildNode = new() { Name = $"{snippetNode.Name[..^1]}999", Text = foundText, ToolTipText = userInput };
+                        snippetNode.Nodes.Add(newChildNode);
+                        for (int i = 0; i < snippetNode.Nodes.Count; i++) { snippetNode.Nodes[i].Name = Regex.Replace(snippetNode.Nodes[i].Name, @"\d+$", i.ToString()); } // tidy up node names
+                        treeView.SelectedNode = newChildNode;
+                        snippetNode.ExpandAll();
+                        tabControl.SelectedIndex = 1;  //toolStripStatusLabel.Text = Utilities.CountChildNodes(treeView);
+                    }
                 }
             }
         }
@@ -1464,7 +1478,7 @@ namespace ClipMenu
         private void CalcToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (Utilities.IsCalcOpen) { Application.OpenForms["FrmClipCalc"]?.Close(); }
-            using FrmClipCalc f = new(Utilities.RemoveInvalidCalculationChars(selectedString), decimalPlaces);
+            using FrmClipCalc f = new(Utilities.RemoveInvalidCalculationChars(selectedString), decimalPlaces, logPath);
             f.ShowDialog();
             if (DialogResult == DialogResult.OK)
             {
@@ -1561,7 +1575,7 @@ namespace ClipMenu
         private void EditorToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (Utilities.IsEditOpen) { Application.OpenForms["FrmClipEdit"]?.Activate(); }
-            else { new FrmClipEdit().Show(); BringToFront(); Activate(); } // Application.OpenForms["FrmClipEdit"] != null
+            else { new FrmClipEdit(logPath).Show(); }
         }
 
         private void RechnerToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1575,7 +1589,7 @@ namespace ClipMenu
             string clipString = Clipboard.ContainsText() ? Clipboard.GetText() : null;
             clipString = !string.IsNullOrEmpty(clipString) && clipString.Any(char.IsDigit) ? clipString.Trim() : string.Empty;
             if (clipString.Length > 0) { clipString = Utilities.RemoveInvalidCalculationChars(clipString); }
-            FrmClipCalc frm = new(clipString, decimalPlaces);
+            FrmClipCalc frm = new(clipString, decimalPlaces, logPath);
             frm.Show();
             frm.Location = new Point((Screen.PrimaryScreen.WorkingArea.Width - frm.Width) / 2, (Screen.PrimaryScreen.WorkingArea.Height - frm.Height) / 2);
         }
@@ -1593,21 +1607,6 @@ namespace ClipMenu
         private void UpToolStripMenuItem_Click(object sender, EventArgs e) { TsButtonMoveUp_Click(null, null); }
         private void DownToolStripMenuItem_Click(object sender, EventArgs e) { TsButtonMoveDn_Click(null, null); }
         private void RemoveToolStripMenuItem_Click(object sender, EventArgs e) { TsButtonDelete_Click(null, null); }
-
-        private void LogEvent(string message = "")
-        {
-            try
-            {
-                if (NativeMethods.lastActiveWindow == IntPtr.Zero) { Console.Beep(); return; }
-                StringBuilder sb = new(256);
-                int charsCopied = NativeMethods.GetWindowText(NativeMethods.lastActiveWindow, sb, sb.Capacity);
-                using StreamWriter writer = new(logPath, true, Encoding.UTF8); // Datei erstellen oder öffnen
-                writer.WriteLine(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + (message.Length > 0 ? " | " + message : "") +
-                    (charsCopied > 0 ? string.Concat(" | ", sb.ToString(0, charsCopied)) : ""));
-                writer.Flush();
-            }
-            catch { }
-        }
 
         private void CbxVisualResponse_CheckedChanged(object sender, EventArgs e)
         {

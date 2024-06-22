@@ -6,6 +6,7 @@ using System.Drawing.Imaging;
 using System.Globalization;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
 
@@ -13,6 +14,25 @@ namespace ClipMenu
 {
     internal static class Utilities
     {
+
+        internal static void LogEvent(string message = "", string logPath = "")
+        {
+            if (string.IsNullOrEmpty(logPath)) { return; }
+            try
+            {
+                if (NativeMethods.lastActiveWindow == IntPtr.Zero) { Console.Beep(); return; }
+                StringBuilder sb = new(256);
+                int charsCopied = NativeMethods.GetWindowText(NativeMethods.lastActiveWindow, sb, sb.Capacity);
+                using StreamWriter writer = new(logPath, true, Encoding.UTF8); // Datei erstellen oder öffnen
+                //using StreamWriter writer = new(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                //    Application.ProductName, Application.ProductName + ".log"), true, Encoding.UTF8); // Datei erstellen oder öffnen
+                writer.WriteLine(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + (message.Length > 0 ? " | " + message : "") +
+                    (charsCopied > 0 ? string.Concat(" | ", sb.ToString(0, charsCopied)) : ""));
+                writer.Flush();
+            }
+            catch { }
+        }
+
         internal static void HelpMsgTaskDlg(IntPtr hwnd, Icon icon)
         {
             string foot = "              © " + GetBuildDate().ToString("yyyy") + " Wilhelm Happe, Version " + Assembly.GetExecutingAssembly().GetName().Version.ToString();

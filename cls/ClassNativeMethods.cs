@@ -326,8 +326,10 @@ namespace ClipMenu
 
         internal static void WinEventProc(IntPtr hWinEventHook, uint eventType, IntPtr hwnd, int idObject, int idChild, uint dwEventThread, uint dwmsEventTime)
         { //https://devblogs.microsoft.com/oldnewthing/20130930-00/?p=3083 // if (hwnd && idObject == OBJID_WINDOW && idChild == CHILDID_SELF && event == EVENT_SYSTEM_FOREGROUND)
+            List<IntPtr> formHandles = [];
+            foreach (Form form in Application.OpenForms) { formHandles.Add(form.Handle); }
             if (hwnd != IntPtr.Zero && idObject == 0x00000000 && idChild == 0 && eventType == EVENT_SYSTEM_FOREGROUND && lastActiveWindow != hwnd &&
-                GetWindowTextLength(hwnd) > 0 && !hwnd.Equals(Application.OpenForms[0]?.Handle)) { lastActiveWindow = hwnd; } // ["ClipMenu"] funktioniert nicht!
+                GetWindowTextLength(hwnd) > 0 && !formHandles.Contains(hwnd)) { lastActiveWindow = hwnd; } // ["ClipMenu"] funktioniert nicht!
         } //Shell_TrayWnd muss elimniert werden (hat keinen WindowText); Restore from Minimize wird problemlos erfasst
     }
 

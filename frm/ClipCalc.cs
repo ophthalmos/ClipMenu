@@ -13,12 +13,14 @@ namespace ClipMenu
         private double res1 = 0.0;
         private readonly CalcClass calcInstance = new();
         private bool shownTaskDialog = false;
+        private readonly string logPath;
 
-        public FrmClipCalc(string clipString, int decPlaces)
+        public FrmClipCalc(string clipString, int decPlaces, string path)
         {
             InitializeComponent();
             tbDisplay.Text = clipString;
             trackBar.Value = decPlaces;
+            logPath = path;
         }
 
         private void Calculator_Load(object sender, EventArgs e)
