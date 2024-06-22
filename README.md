@@ -8,4 +8,4 @@ Darüberhinaus bietet das Programm einige Zusatzfunktionen, die sich anhand der K
 
 Wenn Sie das Programm ausprobieren möchten, laden Sie »ClipMenuSetup.exe« aus der obigen Liste herunter und installieren das Programm.
 
-Sie können das Programm auch »portabel« verwenden. Hierzu müssen Sie das Programm erst installieren und können dann den Programmordner nach Belieben kopieren (und und anschließend das Deinstallationsprogramm aufrufen).
+Sie können das Programm auch »portabel« verwenden. Hierzu müssen Sie das Programm erst installieren und können dann den Programmordner nach Belieben kopieren (und anschließend das Deinstallationsprogramm aufrufen).
