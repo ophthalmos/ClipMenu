@@ -30,7 +30,6 @@ namespace ClipMenu
         private readonly int maxDisplayChars = 196; // cave: größere Werte als 197 führen dazu das letzte Zeile nicht selektiert wird
         private readonly int maxTextLength = 2500000;
         private readonly string xmlPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), appName, appName + ".xml");
-        internal readonly string logPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), appName, appName + ".log");
         private int maxItems = 50;
         private bool passwdExcld = true;
         private bool plainText = false;
@@ -63,11 +62,7 @@ namespace ClipMenu
             NativeMethods.AddClipboardFormatListener(Handle);
             dataTable = Utilities.GetDataTable(maxTextLength);
             ckbAutoStart.Checked = Utilities.IsAutoStartEnabled(appName);
-            if (!Utilities.IsInnoSetupValid(Path.GetDirectoryName(assLctn)))
-            {
-                xmlPath = Path.ChangeExtension(assLctn, ".xml");
-                logPath = Path.ChangeExtension(assLctn, ".log");
-            }
+            if (!Utilities.IsInnoSetupValid(Path.GetDirectoryName(assLctn))) { xmlPath = Path.ChangeExtension(assLctn, ".xml"); } // portable
             cbxMaxItems.SelectedIndex = cbxMaxItems.FindString(maxItems.ToString()); // Default (lässt sich nicht im Designer einstellen)
             foreach (KnownColor color in Enum.GetValues(typeof(KnownColor))) { listOfKnownColors.Add(Color.FromKnownColor(color).Name.ToLower()); }
         }
@@ -237,14 +232,6 @@ namespace ClipMenu
             { Utilities.ErrorMsgTaskDlg(Handle, "Strg+Shift+Einfg konnte nicht registriert werden.\nWahrscheinlich wird die Tastenkombination\nbereits von einer anderen App benutzt."); }
             if (NativeMethods.RegisterAltTabRWin() > 0) { NativeMethods.KeyDown += new KeyEventHandler(GlobalKeyboardHook_KeyDown); }
             if (altTabXBtn) { NativeMethods.RegisterAltTabXBtn(); }
-
-            try
-            {
-                using StreamWriter writer = new(logPath);
-                writer.Write(""); // Datei leeren
-            }
-            catch { }
-            Utilities.LogEvent("FrmClipMenu_Load", logPath);
             NativeMethods.SendMessage(snippetSearchBox.Control.Handle, NativeMethods.EM_SETCUEBANNER, 0, "Suche");
         }
 
@@ -288,7 +275,7 @@ namespace ClipMenu
             {
                 if (Visible) { dontHide = newButton.Checked = true; } // s. FrmClipMenu_Deactivate
                 if (Utilities.IsEditOpen) { Application.OpenForms["FrmClipEdit"]?.Activate(); }
-                else { new FrmClipEdit(logPath).Show(); }
+                else { new FrmClipEdit().Show(); } 
             }
             else if (e.KeyCode == Keys.RWin) { NativeMethods.SendKeysAltTab(); }
             e.Handled = true;
@@ -804,7 +791,6 @@ namespace ClipMenu
                         return true;
                     }
                 case Keys.F2 | Keys.Control | Keys.Shift: { Utilities.StartFile(xmlPath); return true; }
-                case Keys.F3 | Keys.Control | Keys.Shift: { Utilities.StartFile(logPath); return true; }
                 case Keys.F | Keys.Control:
                     {
                         if (tabControl.SelectedIndex == 0) { tbSearch.Focus(); }
@@ -941,9 +927,10 @@ namespace ClipMenu
                     NativeMethods.SendKeyUp(NativeMethods.KeyCode.VK_LCONTROL);
                     NativeMethods.SendKeyUp(NativeMethods.KeyCode.VK_LSHIFT); // Andernfalls wird SendKeysPaste erst nach dem Loslassen erfolgen
 
-                    if (NativeMethods.SendKeysPaste()) { Utilities.LogEvent("WM_HOTKEY: SendKeysPaste", logPath); }
-                    else { Utilities.LogEvent("WM_HOTKEY: destination not found", logPath); }
-
+                    if (!NativeMethods.SendKeysPaste())
+                    {
+                        Utilities.ErrorMsgTaskDlg(Handle, "Es ist ein Fehler aufgetreten.\nVersuchen Sie es noch einmal.");
+                    }
                     NativeMethods.SendKeyUp(NativeMethods.KeyCode.VK_LCONTROL);
                     NativeMethods.SendKeyUp(NativeMethods.KeyCode.VK_LSHIFT); // Ermöglicht, dass die Modifier-Tasten gedrückt bleiben
                     NativeMethods.SendKeyDown(NativeMethods.KeyCode.VK_LCONTROL);
@@ -998,7 +985,6 @@ namespace ClipMenu
             }
             Show(); // auf InsertClipboard warten
             timer.Enabled = true; //new Thread(new ThreadStart(ThreadJob)) { IsBackground = true }.Start(); // führte auf langsamem PC zum Absturz
-            Utilities.LogEvent("CopyStripMenuItem_Click", logPath);
         }
 
         private void ExitToolStripMenuItem_Click(object sender, EventArgs e) { Application.Exit(); }
@@ -1058,13 +1044,10 @@ namespace ClipMenu
                     dataTable.AcceptChanges();
                     lboxTable = Utilities.DataTable2LBoxDataTable(dataTable, maxDisplayChars);
 
-                    //Kalender:
-                    //IntPtr activeWindowHandle = NativeMethods.GetForegroundWindow();  // MessageBox.Show(NativeMethods.GetActiveWindowClass(activeWindowHandle));
-                    //if ((activeWindowHandle != null && !NativeMethods.GetActiveWindowClass(activeWindowHandle).Equals("Shell_TrayWnd")) || NativeMethods.SetForegroundWindow(NativeMethods.GetLastWinHandle(Handle))) { SendKeys.SendWait("^(v)"); }
-                    //else { System.Media.SystemSounds.Beep.Play(); }
-
-                    if (NativeMethods.SendKeysPaste()) { Utilities.LogEvent("SendText: SendKeysPaste", logPath); }
-                    else { Utilities.LogEvent("SendText: ERROR", logPath); }
+                    if (!NativeMethods.SendKeysPaste())
+                    {
+                        Utilities.ErrorMsgTaskDlg(Handle, "Es ist ein Fehler aufgetreten.\nVersuchen Sie es noch einmal.");
+                    }
                 }
                 else { Utilities.ErrorMsgTaskDlg(Handle, "Der Text wurde nicht gefunden!"); }
             }
@@ -1076,7 +1059,6 @@ namespace ClipMenu
             try
             {
                 Hide(); // Hiding is equivalent to setting the Visible property to false
-                //if (Utilities.IsEditOpen && Application.OpenForms["FrmClipEdit"] is FrmClipEdit frmClipEdit) { frmClipEdit.TopMost = false; }
                 ignoreClipboardChange = true;
                 Clipboard.Clear();
                 ignoreClipboardChange = true;
@@ -1085,8 +1067,11 @@ namespace ClipMenu
                     Utilities.ErrorMsgTaskDlg(Handle, "Es ist ein Fehler aufgetreten.\nVersuchen Sie es noch einmal.");
                     Show();
                 }
-                if (NativeMethods.SendKeysPaste()) { Utilities.LogEvent("SendSnippet: SendKeysPaste", logPath); }
-                else { Utilities.LogEvent("SendSnippet: ERROR", logPath); }
+                if (!NativeMethods.SendKeysPaste())
+                {
+                    Utilities.ErrorMsgTaskDlg(Handle, "Es ist ein Fehler aufgetreten.\nVersuchen Sie es noch einmal.");
+                    Show();
+                }
             }
             catch (Exception ex) when (ex is NullReferenceException) { }
         }
@@ -1478,7 +1463,7 @@ namespace ClipMenu
         private void CalcToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (Utilities.IsCalcOpen) { Application.OpenForms["FrmClipCalc"]?.Close(); }
-            using FrmClipCalc f = new(Utilities.RemoveInvalidCalculationChars(selectedString), decimalPlaces, logPath);
+            using FrmClipCalc f = new(Utilities.RemoveInvalidCalculationChars(selectedString), decimalPlaces);
             f.ShowDialog();
             if (DialogResult == DialogResult.OK)
             {
@@ -1575,7 +1560,7 @@ namespace ClipMenu
         private void EditorToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (Utilities.IsEditOpen) { Application.OpenForms["FrmClipEdit"]?.Activate(); }
-            else { new FrmClipEdit(logPath).Show(); }
+            else { new FrmClipEdit().Show(); }
         }
 
         private void RechnerToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1589,7 +1574,7 @@ namespace ClipMenu
             string clipString = Clipboard.ContainsText() ? Clipboard.GetText() : null;
             clipString = !string.IsNullOrEmpty(clipString) && clipString.Any(char.IsDigit) ? clipString.Trim() : string.Empty;
             if (clipString.Length > 0) { clipString = Utilities.RemoveInvalidCalculationChars(clipString); }
-            FrmClipCalc frm = new(clipString, decimalPlaces, logPath);
+            FrmClipCalc frm = new(clipString, decimalPlaces);
             frm.Show();
             frm.Location = new Point((Screen.PrimaryScreen.WorkingArea.Width - frm.Width) / 2, (Screen.PrimaryScreen.WorkingArea.Height - frm.Height) / 2);
         }

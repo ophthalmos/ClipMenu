@@ -3,13 +3,8 @@
     public partial class FrmClipEdit : Form
     {
         public TextBox ClipEditTextBox { get { return textBox; } }
-        private readonly string logPath;
 
-        public FrmClipEdit(string path)
-        {
-            InitializeComponent();
-            logPath = path;
-        }
+        public FrmClipEdit() { InitializeComponent(); }
 
         private void FrmClipEdite_Load(object sender, EventArgs e)
         {
@@ -97,10 +92,12 @@
                 }
                 else
                 {
-                    if (NativeMethods.SendKeysPaste()) { Utilities.LogEvent("SendText: SendKeysPaste", logPath); }
-                    else { Utilities.LogEvent("SendText: ERROR", logPath); }
-                    Application.DoEvents();
-                    Close();
+                    if (!NativeMethods.SendKeysPaste())
+                    {
+                        Utilities.ErrorMsgTaskDlg(Handle, "Es ist ein Fehler aufgetreten.\nVersuchen Sie es noch einmal.");
+                        Show();
+                    }
+                    else { Close(); }
                 }
             }
             catch (Exception ex) when (ex is NullReferenceException) { }
