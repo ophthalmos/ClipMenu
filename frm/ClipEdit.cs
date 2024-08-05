@@ -1,4 +1,4 @@
-﻿using System.Drawing;
+﻿using System.Text.RegularExpressions;
 
 namespace ClipMenu
 {
@@ -8,7 +8,7 @@ namespace ClipMenu
 
         private int searchStart = 0;
         private string searchString;
-        private bool caseChecked = false;  
+        private bool caseChecked = false;
 
         public FrmClipEdit(string clipText, bool medistarRef = false)
         {
@@ -204,6 +204,7 @@ namespace ClipMenu
         private void TextBox_TextChanged(object sender, EventArgs e)
         {
             deleteAllToolStripMenuItem.Enabled = sendToolStripMenuItem.Enabled = textBox.Text.Length > 0;
+            searchStart = textBox.SelectionStart;
         }
 
         private void WordwrapToolStripMenuItem_Click(object sender, EventArgs e)
@@ -222,12 +223,19 @@ namespace ClipMenu
             caseChecked = checkCase;
             searchString = string.IsNullOrEmpty(searchFor) ? searchString : searchFor;
             if (string.IsNullOrEmpty(searchString)) { return; }
-            if (searchStart == 0) { searchStart = textBox.Text.IndexOf(searchString, 0, caseChecked ? StringComparison.InvariantCulture : StringComparison.InvariantCultureIgnoreCase); }
+            if (searchStart == 0)
+            {
+                Match match = Regex.Match(textBox.Text, searchString, caseChecked ? RegexOptions.None : RegexOptions.IgnoreCase);
+                if (match.Success) { searchStart = match.Index; }
+            }
+            //searchStart = textBox.Text.IndexOf(searchString, 0); } //, caseChecked ? StringComparison.InvariantCulture : StringComparison.InvariantCultureIgnoreCase); }
             else
             {
                 if (searchStart > textBox.Text.Length - 1) { searchStart = -1; }
-                searchStart = textBox.Text.IndexOf(searchString, searchStart + 1, caseChecked ? StringComparison.InvariantCulture : StringComparison.InvariantCultureIgnoreCase);
+                Match match = new Regex(searchString, caseChecked ? RegexOptions.None : RegexOptions.IgnoreCase).Match(textBox.Text, searchStart + 1);
+                if (match.Success) { searchStart = match.Index; }
             }
+            //   searchStart = textBox.Text.IndexOf(searchString, searchStart + 1); //, caseChecked ? StringComparison.InvariantCulture : StringComparison.InvariantCultureIgnoreCase);
             if (searchStart >= 0)
             {
                 textBox.SelectionStart = searchStart;
@@ -235,5 +243,8 @@ namespace ClipMenu
                 textBox.Select();
             }
         }
+
+        private void TextBox_KeyUp(object sender, KeyEventArgs e) { searchStart = textBox.SelectionStart; }
+        private void TextBox_MouseClick(object sender, MouseEventArgs e) { searchStart = textBox.SelectionStart; }
     }
 }

@@ -44,6 +44,10 @@
             copyToolStripMenuItem = new ToolStripMenuItem();
             pasteToolStripMenuItem = new ToolStripMenuItem();
             clearToolStripMenuItem = new ToolStripMenuItem();
+            toolStripSeparator4 = new ToolStripSeparator();
+            searchForToolStripMenuItem = new ToolStripMenuItem();
+            searchfurtherToolStripMenuItem = new ToolStripMenuItem();
+            toolStripSeparator5 = new ToolStripSeparator();
             selectToolStripMenuItem = new ToolStripMenuItem();
             viewToolStripMenuItem = new ToolStripMenuItem();
             largeToolStripMenuItem = new ToolStripMenuItem();
@@ -56,10 +60,6 @@
             sendToolStripMenuItem = new ToolStripMenuItem();
             deleteAllToolStripMenuItem = new ToolStripMenuItem();
             saveFileDialog = new SaveFileDialog();
-            toolStripSeparator4 = new ToolStripSeparator();
-            toolStripSeparator5 = new ToolStripSeparator();
-            searchForToolStripMenuItem = new ToolStripMenuItem();
-            searchfurtherToolStripMenuItem = new ToolStripMenuItem();
             statusStrip.SuspendLayout();
             menuStrip.SuspendLayout();
             SuspendLayout();
@@ -76,7 +76,9 @@
             textBox.ScrollBars = ScrollBars.Vertical;
             textBox.Size = new Size(389, 165);
             textBox.TabIndex = 0;
+            textBox.MouseClick += TextBox_MouseClick;
             textBox.TextChanged += TextBox_TextChanged;
+            textBox.KeyUp += TextBox_KeyUp;
             // 
             // statusStrip
             // 
@@ -113,20 +115,20 @@
             // 
             saveToolStripMenuItem.Name = "saveToolStripMenuItem";
             saveToolStripMenuItem.ShortcutKeyDisplayString = "Strg+S";
-            saveToolStripMenuItem.Size = new Size(180, 22);
+            saveToolStripMenuItem.Size = new Size(168, 22);
             saveToolStripMenuItem.Text = "Speichern";
             saveToolStripMenuItem.Click += SaveToolStripMenuItem_Click;
             // 
             // toolStripSeparator2
             // 
             toolStripSeparator2.Name = "toolStripSeparator2";
-            toolStripSeparator2.Size = new Size(177, 6);
+            toolStripSeparator2.Size = new Size(165, 6);
             // 
             // exitToolStripMenuItem
             // 
             exitToolStripMenuItem.Name = "exitToolStripMenuItem";
             exitToolStripMenuItem.ShortcutKeyDisplayString = "Esc";
-            exitToolStripMenuItem.Size = new Size(180, 22);
+            exitToolStripMenuItem.Size = new Size(168, 22);
             exitToolStripMenuItem.Text = "Schließen";
             exitToolStripMenuItem.Click += ExitToolStripMenuItem_Click;
             // 
@@ -181,6 +183,31 @@
             clearToolStripMenuItem.Size = new Size(202, 22);
             clearToolStripMenuItem.Text = "Löschen";
             clearToolStripMenuItem.Click += ClearToolStripMenuItem_Click;
+            // 
+            // toolStripSeparator4
+            // 
+            toolStripSeparator4.Name = "toolStripSeparator4";
+            toolStripSeparator4.Size = new Size(199, 6);
+            // 
+            // searchForToolStripMenuItem
+            // 
+            searchForToolStripMenuItem.Name = "searchForToolStripMenuItem";
+            searchForToolStripMenuItem.ShortcutKeyDisplayString = "Strg+F";
+            searchForToolStripMenuItem.Size = new Size(202, 22);
+            searchForToolStripMenuItem.Text = "Suchen...";
+            searchForToolStripMenuItem.Click += SearchForToolStripMenuItem_Click;
+            // 
+            // searchfurtherToolStripMenuItem
+            // 
+            searchfurtherToolStripMenuItem.Name = "searchfurtherToolStripMenuItem";
+            searchfurtherToolStripMenuItem.ShortcutKeyDisplayString = "F3";
+            searchfurtherToolStripMenuItem.Size = new Size(202, 22);
+            searchfurtherToolStripMenuItem.Text = "Weitersuchen";
+            // 
+            // toolStripSeparator5
+            // 
+            toolStripSeparator5.Name = "toolStripSeparator5";
+            toolStripSeparator5.Size = new Size(199, 6);
             // 
             // selectToolStripMenuItem
             // 
@@ -279,31 +306,6 @@
             saveFileDialog.DefaultExt = "txt";
             saveFileDialog.FileName = "ClipMenu.txt";
             saveFileDialog.Filter = "Textdateien(*.txt)|*.txt|Alle Dateien (*.*)|*.*";
-            // 
-            // toolStripSeparator4
-            // 
-            toolStripSeparator4.Name = "toolStripSeparator4";
-            toolStripSeparator4.Size = new Size(199, 6);
-            // 
-            // toolStripSeparator5
-            // 
-            toolStripSeparator5.Name = "toolStripSeparator5";
-            toolStripSeparator5.Size = new Size(199, 6);
-            // 
-            // searchForToolStripMenuItem
-            // 
-            searchForToolStripMenuItem.Name = "searchForToolStripMenuItem";
-            searchForToolStripMenuItem.ShortcutKeyDisplayString = "Strg+F";
-            searchForToolStripMenuItem.Size = new Size(202, 22);
-            searchForToolStripMenuItem.Text = "Suchen...";
-            searchForToolStripMenuItem.Click += SearchForToolStripMenuItem_Click;
-            // 
-            // searchfurtherToolStripMenuItem
-            // 
-            searchfurtherToolStripMenuItem.Name = "searchfurtherToolStripMenuItem";
-            searchfurtherToolStripMenuItem.ShortcutKeyDisplayString = "F3";
-            searchfurtherToolStripMenuItem.Size = new Size(202, 22);
-            searchfurtherToolStripMenuItem.Text = "Weitersuchen";
             // 
             // FrmClipEdit
             // 
