@@ -41,9 +41,8 @@ namespace ClipMenu
                 "Strg+Win+V:        Anzeigen des Programmfensters" + Environment.NewLine +
                 "Strg+Win+C:        dito, sendet aber zuvor Strg+C" + Environment.NewLine +
                 "Strg+Win+Einfg:  ClipEditor, Topmost-Zwischenablage" + Environment.NewLine +
-                "Strg+Win+R:         ClipCalc, einfacher Taschenrechner" + Environment.NewLine + Environment.NewLine +
-                //"Shift+Strg+V:  Textformatierungen entfernen und resultierenden" + Environment.NewLine +
-                //"                          Text in das akutelle Fenster eingefügen" + Environment.NewLine + Environment.NewLine +
+                "Strg+Win+R:         ClipCalc, einfacher Taschenrechner" + Environment.NewLine +
+                "Shift+Strg+V:        Text ohne Formatierungen einfügen" + Environment.NewLine + Environment.NewLine +
                 "Suchfunktion:" + Environment.NewLine +
                 "¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯" + Environment.NewLine +
                 "Das Suchfeld wird automatisch aktiviert, wenn getippt wird." + Environment.NewLine + Environment.NewLine +
@@ -63,9 +62,6 @@ namespace ClipMenu
         internal static DataTable GetDataTable(int maxTextLength)
         {
             DataTable dt = new("Clips");
-
-            //dt.PrimaryKey = new DataColumn[] { dt.Columns["Time"], dt.Columns["Text"] };
-
             DataColumn col1 = dt.Columns.Add("Time", typeof(DateTime));
             col1.DefaultValue = DateTime.Now;
             col1.AllowDBNull = false;
@@ -93,6 +89,8 @@ namespace ClipMenu
             }
             return newTable;
         }
+
+        internal static string MedistarRefWert(double zahl) { return ((zahl >= 0 ? "+" : "-") + string.Format("{0,5:F2}", Math.Abs(zahl))).Replace(",", "."); }
 
         internal static string LimitedSubstr(string text, int maxLength)
         {

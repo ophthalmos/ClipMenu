@@ -1,10 +1,28 @@
-﻿namespace ClipMenu
+﻿using System.Drawing;
+
+namespace ClipMenu
 {
     public partial class FrmClipEdit : Form
     {
         public TextBox ClipEditTextBox { get { return textBox; } }
 
-        public FrmClipEdit() { InitializeComponent(); }
+        private int searchStart = 0;
+        private string searchString;
+        private bool caseChecked = false;  
+
+        public FrmClipEdit(string clipText, bool medistarRef = false)
+        {
+            InitializeComponent();
+            textBox.Text = Clipboard.ContainsText() ? clipText : "";
+            if (medistarRef)
+            {
+                textBox.Font = new Font("Courier New", 14.0f, FontStyle.Bold);
+                wordwrapToolStripMenuItem.Checked = textBox.WordWrap = false;
+                textBox.SelectionStart = textBox.Text.Length; // Cursor ans Ende
+            }
+            else { textBox.SelectAll(); } // textBox.SelectionStart = textBox.Text.Length; // Cursor ans Ende
+
+        }
 
         private void FrmClipEdite_Load(object sender, EventArgs e)
         {
@@ -12,19 +30,12 @@
             Rectangle workingArea = Screen.PrimaryScreen.WorkingArea;
             Left = (workingArea.Width - Size.Width) / 2;
             Top = (workingArea.Height - Size.Height) / 2 - 200;
-            textBox.Text = Clipboard.ContainsText() ? Clipboard.GetText() : "";
         }
 
         private void FrmClipEdit_Shown(object sender, EventArgs e)
         {
             NativeMethods.SendMessage(textBox.Handle, NativeMethods.EM_SETMARGINS, NativeMethods.EC_LEFTMARGIN, 65536 + 3);
-            if (Clipboard.ContainsText())
-            {
-                string data = Clipboard.GetText();
-                if (!string.IsNullOrEmpty(data)) { textBox.Text = data; }
-            }
             textBox.Focus();
-            textBox.SelectAll(); // textBox.SelectionStart = textBox.Text.Length; // Cursor ans Ende
         }
 
         protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
@@ -59,6 +70,11 @@
                         textBox.SelectAll();
                         return true;
                     }
+                case Keys.F | Keys.Control:
+                    {
+                        SearchForToolStripMenuItem_Click(null, null);
+                        return true;
+                    }
                 case Keys.Z | Keys.Control:
                     {
                         UndoToolStripMenuItem_Click(null, null);
@@ -67,6 +83,16 @@
                 case Keys.F1:
                     {
                         AboutToolStripMenuItem_Click(null, null);
+                        return true;
+                    }
+                case Keys.F3:
+                    {
+                        SearchFor_Find(searchString, caseChecked);
+                        return true;
+                    }
+                case Keys.F5:
+                    {
+                        WordwrapToolStripMenuItem_Click(null, null);
                         return true;
                     }
                 case Keys.Escape:
@@ -178,6 +204,36 @@
         private void TextBox_TextChanged(object sender, EventArgs e)
         {
             deleteAllToolStripMenuItem.Enabled = sendToolStripMenuItem.Enabled = textBox.Text.Length > 0;
+        }
+
+        private void WordwrapToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            textBox.WordWrap = !textBox.WordWrap;
+            wordwrapToolStripMenuItem.Checked = textBox.WordWrap;
+        }
+
+        private void SearchForToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            using TextBoxSearch f = new(searchString, caseChecked);
+            f.ShowDialog();
+        }
+        public void SearchFor_Find(string searchFor, bool checkCase)
+        {
+            caseChecked = checkCase;
+            searchString = string.IsNullOrEmpty(searchFor) ? searchString : searchFor;
+            if (string.IsNullOrEmpty(searchString)) { return; }
+            if (searchStart == 0) { searchStart = textBox.Text.IndexOf(searchString, 0, caseChecked ? StringComparison.InvariantCulture : StringComparison.InvariantCultureIgnoreCase); }
+            else
+            {
+                if (searchStart > textBox.Text.Length - 1) { searchStart = -1; }
+                searchStart = textBox.Text.IndexOf(searchString, searchStart + 1, caseChecked ? StringComparison.InvariantCulture : StringComparison.InvariantCultureIgnoreCase);
+            }
+            if (searchStart >= 0)
+            {
+                textBox.SelectionStart = searchStart;
+                textBox.SelectionLength = searchString.Length;
+                textBox.Select();
+            }
         }
     }
 }

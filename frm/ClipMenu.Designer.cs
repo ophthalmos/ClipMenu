@@ -166,7 +166,7 @@
             // 
             contextMenuStrip.Items.AddRange(new ToolStripItem[] { tsConvertSubMenu, toolStripSeparator5, sendToolStripMenuItem, toolStripSeparator9, deleteToolStripMenuItem, toolStripSeparator6, snippetToolStripMenuItem, toolStripSeparator7, propertyToolStripMenuItem });
             contextMenuStrip.Name = "contextMenuStrip";
-            contextMenuStrip.Size = new Size(206, 138);
+            contextMenuStrip.Size = new Size(206, 160);
             contextMenuStrip.Opening += ContextMenuStrip_Opening;
             // 
             // tsConvertSubMenu
@@ -314,7 +314,7 @@
             snippetToolStripMenuItem.Image = Properties.Resources.clipboard__arrow;
             snippetToolStripMenuItem.ImageTransparentColor = Color.White;
             snippetToolStripMenuItem.Name = "snippetToolStripMenuItem";
-            snippetToolStripMenuItem.ShortcutKeyDisplayString = "Strg+S";
+            snippetToolStripMenuItem.ShortcutKeyDisplayString = "Strg+I";
             snippetToolStripMenuItem.Size = new Size(205, 22);
             snippetToolStripMenuItem.Text = "&Sammeln";
             snippetToolStripMenuItem.Click += SnippetToolStripMenuItem_Click;
@@ -427,7 +427,7 @@
             treeView.ContextMenuStrip = snipMenuStrip;
             treeView.Dock = DockStyle.Fill;
             treeView.LabelEdit = true;
-            treeView.Location = new Point(3, 48);
+            treeView.Location = new Point(3, 29);
             treeView.Name = "treeView";
             treeNode1.Name = "Date1";
             treeNode1.Text = "1.3.";
@@ -455,7 +455,7 @@
             treeNode12.Text = "Zeichen";
             treeView.Nodes.AddRange(new TreeNode[] { treeNode8, treeNode10, treeNode12 });
             treeView.ShowNodeToolTips = true;
-            treeView.Size = new Size(316, 460);
+            treeView.Size = new Size(316, 479);
             treeView.TabIndex = 0;
             treeView.BeforeLabelEdit += TreeView_BeforeLabelEdit;
             treeView.AfterLabelEdit += TreeView_AfterLabelEdit;
@@ -525,7 +525,7 @@
             toolStrip.LayoutStyle = ToolStripLayoutStyle.Flow;
             toolStrip.Location = new Point(3, 3);
             toolStrip.Name = "toolStrip";
-            toolStrip.Size = new Size(316, 45);
+            toolStrip.Size = new Size(316, 26);
             toolStrip.TabIndex = 1;
             // 
             // tsButtonNew

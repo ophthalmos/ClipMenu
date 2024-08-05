@@ -397,7 +397,7 @@
             btnStdPower.Name = "btnStdPower";
             btnStdPower.Size = new Size(40, 40);
             btnStdPower.TabIndex = 15;
-            btnStdPower.Text = "⋀ ";
+            btnStdPower.Text = "⋀";
             btnStdPower.UseVisualStyleBackColor = true;
             btnStdPower.Click += btnStdPower_Click;
             // 

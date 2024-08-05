@@ -28,7 +28,7 @@ namespace ClipMenu
         private bool ignoreClipboardChange;
         //private bool ignoreClipboardFeedback;
         private readonly int maxDisplayChars = 196; // cave: größere Werte als 197 führen dazu das letzte Zeile nicht selektiert wird
-        private readonly int maxTextLength = 2500000;
+        private readonly int maxTextLength = 8000000;
         private readonly string xmlPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), appName, appName + ".xml");
         private int maxItems = 50;
         private bool passwdExcld = true;
@@ -42,6 +42,7 @@ namespace ClipMenu
         private bool symbolsExpanded = true;
         private bool propertyExpanderExpanded = true;
         private bool workAround = false;
+        private bool medistarRef = false;
         private Tuple<int, int, TreeNode> deletedNodeTuple;
         private bool dontHide = false;
         private bool shownTaskDialog = false;
@@ -275,7 +276,7 @@ namespace ClipMenu
             {
                 if (Visible) { dontHide = newButton.Checked = true; } // s. FrmClipMenu_Deactivate
                 if (Utilities.IsEditOpen) { Application.OpenForms["FrmClipEdit"]?.Activate(); }
-                else { new FrmClipEdit().Show(); } 
+                else { new FrmClipEdit(dataTable.Rows.Count > 0 && dataTable.Rows[0]["Type"].ToString().Equals("text") ? dataTable.Rows[0]["Text"].ToString() : string.Empty, medistarRef).Show(); }
             }
             else if (e.KeyCode == Keys.RWin) { NativeMethods.SendKeysAltTab(); }
             e.Handled = true;
@@ -436,8 +437,8 @@ namespace ClipMenu
             foreach (DataRow row in dataTable.Rows)
             {
                 bool isImage = row["Type"].ToString().Equals("image");
-                if (isImage && tbSearch.Text.Length > 0) { continue; }
-                if (row["Text"].ToString().Contains(tbSearch.Text, StringComparison.InvariantCultureIgnoreCase))
+                if (isImage && tbSearch.Text.Length > 0 && tbSearch.Text != "i" && tbSearch.Text != "im" && tbSearch.Text != "img" && tbSearch.Text != "ima" && tbSearch.Text != "imag" && tbSearch.Text != "image") { continue; }
+                if ((isImage && (tbSearch.Text == "i" || tbSearch.Text == "im" || tbSearch.Text == "img" || tbSearch.Text == "ima" || tbSearch.Text == "imag" || tbSearch.Text == "image")) || row["Text"].ToString().Contains(tbSearch.Text, StringComparison.InvariantCultureIgnoreCase))
                 {
                     object[] values = new object[row.ItemArray.Length]; // ein Array zum Speichern der Spaltenwerte
                     row.ItemArray.CopyTo(values, 0); // Spaltenwerte in das Array kopieren
@@ -695,6 +696,24 @@ namespace ClipMenu
             text = new string(text.Where(XmlConvert.IsXmlChar).ToArray()); // Utilities.RemoveInvalidXmlChars(text); // new string(text.Where(XmlConvert.IsXmlChar).ToArray());
             if (text.Length == 0) { return; }
             tbSearch.Clear();
+
+            medistarRef = false;
+            Match match = new Regex(@"S=(?<sph>[+-]\s*\d+[.,]\d{2}) Z=(?<zyl>[+-]\s*\d+[.,]\d{2})\*\s*(?<axis>\d{1,3})").Match(text);
+            while (match.Success) // V1 . R.:S=-24.75 Z=- 7.25*180
+            {
+                if (double.TryParse(match.Groups["sph"].Value.Replace(" ", string.Empty).Replace(".", ","), out double sph) &&
+                    double.TryParse(match.Groups["zyl"].Value.Replace(" ", string.Empty).Replace(".", ","), out double zyl) &&
+                    int.TryParse(match.Groups["axis"].Value, out int axis))
+                {
+                    sph = sph + zyl; // Neue Sphäre
+                    zyl = zyl * -1; // Neuer Zylinder
+                    if (axis >= 90) { axis -= 90; } else { axis += 90; } // Neue Achse
+                    text = text.Replace(match.Value, "S=" + Utilities.MedistarRefWert(sph) + " Z=" + Utilities.MedistarRefWert(zyl) + "*" + string.Format("{0,3:0}", axis));
+                    medistarRef = true;
+                }
+                match = match.NextMatch();
+            }
+
             foreach (DataRow row in dataTable.AsEnumerable().Where(row => row.Field<string>("Text").Equals(text))) { row.Delete(); }
             DataRow dr = dataTable.NewRow();
             dr[0] = DateTime.Now;
@@ -802,6 +821,11 @@ namespace ClipMenu
                         if (tabControl.SelectedIndex == 0 && listBox.Items.Count > 0) { BtnDeleteAll_Click(null, null); }
                         return true;
                     }
+                case Keys.I | Keys.Control:
+                    {
+                        if (tabControl.SelectedIndex == 0 && listBox.Items.Count > 0) { SnippetToolStripMenuItem_Click(null, null); }
+                        return true;
+                    }
                 case Keys.V | Keys.Control:
                     {
                         tabControl.SelectedIndex = 0;
@@ -900,7 +924,30 @@ namespace ClipMenu
                         else if (Clipboard.ContainsImage())
                         {
                             using Image image = Clipboard.GetImage();
-                            if (image != null) { InsertClipboard("image", Utilities.ImageToBase64String(image)); }
+                            if (image != null)
+                            {
+                                Rectangle activeScreenDimensions = Screen.FromControl(this).Bounds; // aktiver Bildschirm bei Multibetrieb
+                                int foo = activeScreenDimensions.Height > 1350 ? 300 : activeScreenDimensions.Height > 1150 ? 200 : 100;
+                                if (image.Width > activeScreenDimensions.Width - foo || image.Height > activeScreenDimensions.Height - foo)
+                                {
+                                    float ratio = Math.Min((float)(activeScreenDimensions.Width - foo) / image.Width, (float)(activeScreenDimensions.Height - foo) / image.Height);
+                                    int newWidth = (int)(image.Width * ratio);
+                                    int newHeight = (int)(image.Height * ratio);
+
+                                    //MessageBox.Show("Screen: " + activeScreenDimensions.Width.ToString() + " x " + activeScreenDimensions.Height.ToString() + Environment.NewLine +
+                                    //    "Image: " + image.Width.ToString() + " x " + image.Height.ToString() + Environment.NewLine +
+                                    //    "Neu: " + newWidth.ToString() + " x " + newHeight.ToString() + Environment.NewLine +
+                                    //    "Ratio: " + ratio.ToString());
+
+                                    SplashForm frmSplash = new("Thumbnail statt Original!", 1000); // using geht nur mit ShowDialog
+                                    NativeMethods.ShowWindow(frmSplash.Handle, NativeMethods.SW_SHOWNOACTIVATE); // ohne TopMost!
+
+
+                                    using Image resizedImage = image.GetThumbnailImage(newWidth, newWidth * image.Height / image.Width, null, IntPtr.Zero);
+                                    InsertClipboard("image", Utilities.ImageToBase64String(resizedImage));
+                                }
+                                else { InsertClipboard("image", Utilities.ImageToBase64String(image)); }
+                            }
                         }
                         else if (Clipboard.ContainsAudio())
                         {
@@ -1098,8 +1145,20 @@ namespace ClipMenu
         private void ContextMenuStrip_Opening(object sender, CancelEventArgs e)
         {
             if (listBox.SelectedIndex == -1) { e.Cancel = true; }
-            else if (lboxTable.Rows[listBox.SelectedIndex]["Type"].ToString().Equals("image")) { snippetToolStripMenuItem.Text = "Anzeigen"; }
-            else { snippetToolStripMenuItem.Text = "Sammeln"; }
+            else if (lboxTable.Rows[listBox.SelectedIndex]["Type"].ToString().Equals("image"))
+            {
+                snippetToolStripMenuItem.Text = "Anzeigen";
+                tsConvertSubMenu.Visible = toolStripSeparator5.Visible = false;
+            }
+            else if (lboxTable.Rows[listBox.SelectedIndex]["Type"].ToString().Equals("file"))
+            {
+                snippetToolStripMenuItem.Visible = toolStripSeparator6.Visible = tsConvertSubMenu.Visible = toolStripSeparator5.Visible = false;
+            }
+            else
+            {
+                snippetToolStripMenuItem.Text = "Sammeln";
+                snippetToolStripMenuItem.Visible = tsConvertSubMenu.Visible = toolStripSeparator5.Visible = toolStripSeparator6.Visible = true;
+            }
         }
 
         private void CbAutoStart_CheckedChanged(object sender, EventArgs e)
@@ -1560,7 +1619,7 @@ namespace ClipMenu
         private void EditorToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (Utilities.IsEditOpen) { Application.OpenForms["FrmClipEdit"]?.Activate(); }
-            else { new FrmClipEdit().Show(); }
+            else { new FrmClipEdit(dataTable.Rows.Count > 0 && dataTable.Rows[0]["Type"].ToString().Equals("text") ? dataTable.Rows[0]["Text"].ToString() : string.Empty, medistarRef).Show(); }
         }
 
         private void RechnerToolStripMenuItem_Click(object sender, EventArgs e)
