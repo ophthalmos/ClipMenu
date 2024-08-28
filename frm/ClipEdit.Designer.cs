@@ -328,7 +328,7 @@
             Text = "ClipEdit";
             TopMost = true;
             FormClosing += FrmClipEdit_FormClosing;
-            Load += FrmClipEdite_Load;
+            Load += FrmClipEdit_Load;
             Shown += FrmClipEdit_Shown;
             statusStrip.ResumeLayout(false);
             statusStrip.PerformLayout();

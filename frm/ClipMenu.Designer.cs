@@ -59,6 +59,7 @@
             übersetzerToolStripMenuItem = new ToolStripMenuItem();
             toolStripSeparator5 = new ToolStripSeparator();
             sendToolStripMenuItem = new ToolStripMenuItem();
+            file2TxtStripMenuItem = new ToolStripMenuItem();
             toolStripSeparator9 = new ToolStripSeparator();
             deleteToolStripMenuItem = new ToolStripMenuItem();
             toolStripSeparator6 = new ToolStripSeparator();
@@ -98,6 +99,7 @@
             cbxAcousticResponse = new CheckBox();
             cbxVisualResponse = new CheckBox();
             groupBox = new GroupBox();
+            checkBoxMenuKey = new CheckBox();
             checkBoxPlainText = new CheckBox();
             checkBoxXButton = new CheckBox();
             checkBoxRWin = new CheckBox();
@@ -164,9 +166,9 @@
             // 
             // contextMenuStrip
             // 
-            contextMenuStrip.Items.AddRange(new ToolStripItem[] { tsConvertSubMenu, toolStripSeparator5, sendToolStripMenuItem, toolStripSeparator9, deleteToolStripMenuItem, toolStripSeparator6, snippetToolStripMenuItem, toolStripSeparator7, propertyToolStripMenuItem });
+            contextMenuStrip.Items.AddRange(new ToolStripItem[] { tsConvertSubMenu, toolStripSeparator5, sendToolStripMenuItem, file2TxtStripMenuItem, toolStripSeparator9, deleteToolStripMenuItem, toolStripSeparator6, snippetToolStripMenuItem, toolStripSeparator7, propertyToolStripMenuItem });
             contextMenuStrip.Name = "contextMenuStrip";
-            contextMenuStrip.Size = new Size(206, 160);
+            contextMenuStrip.Size = new Size(228, 160);
             contextMenuStrip.Opening += ContextMenuStrip_Opening;
             // 
             // tsConvertSubMenu
@@ -176,7 +178,7 @@
             tsConvertSubMenu.ImageTransparentColor = Color.Transparent;
             tsConvertSubMenu.Name = "tsConvertSubMenu";
             tsConvertSubMenu.ShortcutKeyDisplayString = "F2";
-            tsConvertSubMenu.Size = new Size(205, 22);
+            tsConvertSubMenu.Size = new Size(227, 22);
             tsConvertSubMenu.Text = "&Verarbeiten";
             // 
             // clipMenuStrip
@@ -277,7 +279,7 @@
             // toolStripSeparator5
             // 
             toolStripSeparator5.Name = "toolStripSeparator5";
-            toolStripSeparator5.Size = new Size(202, 6);
+            toolStripSeparator5.Size = new Size(224, 6);
             // 
             // sendToolStripMenuItem
             // 
@@ -285,14 +287,21 @@
             sendToolStripMenuItem.ImageTransparentColor = Color.White;
             sendToolStripMenuItem.Name = "sendToolStripMenuItem";
             sendToolStripMenuItem.ShortcutKeyDisplayString = "Enter";
-            sendToolStripMenuItem.Size = new Size(205, 22);
+            sendToolStripMenuItem.Size = new Size(227, 22);
             sendToolStripMenuItem.Text = "&Übertragen";
             sendToolStripMenuItem.Click += SendToolStripMenuItem_Click;
+            // 
+            // file2TxtStripMenuItem
+            // 
+            file2TxtStripMenuItem.Name = "file2TxtStripMenuItem";
+            file2TxtStripMenuItem.Size = new Size(227, 22);
+            file2TxtStripMenuItem.Text = "Dateinamen statt Dateiobjekt";
+            file2TxtStripMenuItem.Click += File2TxtStripMenuItem_Click;
             // 
             // toolStripSeparator9
             // 
             toolStripSeparator9.Name = "toolStripSeparator9";
-            toolStripSeparator9.Size = new Size(202, 6);
+            toolStripSeparator9.Size = new Size(224, 6);
             // 
             // deleteToolStripMenuItem
             // 
@@ -300,14 +309,14 @@
             deleteToolStripMenuItem.ImageTransparentColor = Color.White;
             deleteToolStripMenuItem.Name = "deleteToolStripMenuItem";
             deleteToolStripMenuItem.ShortcutKeyDisplayString = "Entf";
-            deleteToolStripMenuItem.Size = new Size(205, 22);
+            deleteToolStripMenuItem.Size = new Size(227, 22);
             deleteToolStripMenuItem.Text = "&Löschen";
             deleteToolStripMenuItem.Click += DeleteToolStripMenuItem_Click;
             // 
             // toolStripSeparator6
             // 
             toolStripSeparator6.Name = "toolStripSeparator6";
-            toolStripSeparator6.Size = new Size(202, 6);
+            toolStripSeparator6.Size = new Size(224, 6);
             // 
             // snippetToolStripMenuItem
             // 
@@ -315,21 +324,21 @@
             snippetToolStripMenuItem.ImageTransparentColor = Color.White;
             snippetToolStripMenuItem.Name = "snippetToolStripMenuItem";
             snippetToolStripMenuItem.ShortcutKeyDisplayString = "Strg+I";
-            snippetToolStripMenuItem.Size = new Size(205, 22);
+            snippetToolStripMenuItem.Size = new Size(227, 22);
             snippetToolStripMenuItem.Text = "&Sammeln";
             snippetToolStripMenuItem.Click += SnippetToolStripMenuItem_Click;
             // 
             // toolStripSeparator7
             // 
             toolStripSeparator7.Name = "toolStripSeparator7";
-            toolStripSeparator7.Size = new Size(202, 6);
+            toolStripSeparator7.Size = new Size(224, 6);
             // 
             // propertyToolStripMenuItem
             // 
             propertyToolStripMenuItem.Image = Properties.Resources.clipboard_task;
             propertyToolStripMenuItem.Name = "propertyToolStripMenuItem";
             propertyToolStripMenuItem.ShortcutKeyDisplayString = "Alt+Enter";
-            propertyToolStripMenuItem.Size = new Size(205, 22);
+            propertyToolStripMenuItem.Size = new Size(227, 22);
             propertyToolStripMenuItem.Text = "&Eigenschaften";
             propertyToolStripMenuItem.Click += PropertyToolStripMenuItem_Click;
             // 
@@ -650,7 +659,7 @@
             gbxClipboardChange.Controls.Add(cbxAcousticResponse);
             gbxClipboardChange.Controls.Add(cbxVisualResponse);
             gbxClipboardChange.Font = new Font("Segoe UI", 9F);
-            gbxClipboardChange.Location = new Point(8, 297);
+            gbxClipboardChange.Location = new Point(8, 266);
             gbxClipboardChange.Name = "gbxClipboardChange";
             gbxClipboardChange.Size = new Size(306, 47);
             gbxClipboardChange.TabIndex = 14;
@@ -683,16 +692,29 @@
             // 
             // groupBox
             // 
+            groupBox.Controls.Add(checkBoxMenuKey);
             groupBox.Controls.Add(checkBoxPlainText);
             groupBox.Controls.Add(checkBoxXButton);
             groupBox.Controls.Add(checkBoxRWin);
             groupBox.Font = new Font("Segoe UI", 9F);
-            groupBox.Location = new Point(8, 354);
+            groupBox.Location = new Point(8, 323);
             groupBox.Name = "groupBox";
-            groupBox.Size = new Size(306, 105);
+            groupBox.Size = new Size(306, 136);
             groupBox.TabIndex = 13;
             groupBox.TabStop = false;
             groupBox.Text = "Zusätzliche Funktionen (Änderung nach Neustart)";
+            // 
+            // checkBoxMenuKey
+            // 
+            checkBoxMenuKey.AutoSize = true;
+            checkBoxMenuKey.Font = new Font("Segoe UI", 10F);
+            checkBoxMenuKey.Location = new Point(13, 105);
+            checkBoxMenuKey.Name = "checkBoxMenuKey";
+            checkBoxMenuKey.Size = new Size(246, 23);
+            checkBoxMenuKey.TabIndex = 3;
+            checkBoxMenuKey.Text = "Menü-/Anwendungstaste als AltTab";
+            checkBoxMenuKey.UseVisualStyleBackColor = true;
+            checkBoxMenuKey.CheckedChanged += CheckBoxMenuKey_CheckedChanged;
             // 
             // checkBoxPlainText
             // 
@@ -710,7 +732,7 @@
             // 
             checkBoxXButton.AutoSize = true;
             checkBoxXButton.Font = new Font("Segoe UI", 10F);
-            checkBoxXButton.Location = new Point(13, 76);
+            checkBoxXButton.Location = new Point(13, 49);
             checkBoxXButton.Name = "checkBoxXButton";
             checkBoxXButton.Size = new Size(266, 23);
             checkBoxXButton.TabIndex = 1;
@@ -722,7 +744,7 @@
             // 
             checkBoxRWin.AutoSize = true;
             checkBoxRWin.Font = new Font("Segoe UI", 10F);
-            checkBoxRWin.Location = new Point(13, 49);
+            checkBoxRWin.Location = new Point(13, 76);
             checkBoxRWin.Name = "checkBoxRWin";
             checkBoxRWin.Size = new Size(264, 23);
             checkBoxRWin.TabIndex = 0;
@@ -744,7 +766,7 @@
             lblPasswords.Font = new Font("Segoe UI", 9F);
             lblPasswords.Location = new Point(13, 179);
             lblPasswords.Name = "lblPasswords";
-            lblPasswords.Size = new Size(301, 112);
+            lblPasswords.Size = new Size(301, 82);
             lblPasswords.TabIndex = 11;
             lblPasswords.Text = resources.GetString("lblPasswords.Text");
             // 
@@ -1071,5 +1093,7 @@
         private GroupBox gbxClipboardChange;
         private CheckBox cbxVisualResponse;
         private CheckBox cbxAcousticResponse;
+        private CheckBox checkBoxMenuKey;
+        private ToolStripMenuItem file2TxtStripMenuItem;
     }
 }

@@ -241,15 +241,19 @@ namespace ClipMenu
         {
             try
             {
-                Hide(); // Hiding is equivalent to setting the Visible property to false
                 Clipboard.Clear();
                 if (Application.OpenForms[0] is FrmClipMenu form) { form.IgnoreClipboardChange = true; }
                 if (!Utilities.SetClipboardText(text))
                 {
                     Utilities.ErrorMsgTaskDlg(Handle, "Es ist ein Fehler aufgetreten.\nVersuchen Sie es noch einmal.");
-                    Show();
+                    //Show();
                 }
-                else { NativeMethods.SendKeysPaste(); }
+                else
+                {
+                    Hide(); // Hiding is equivalent to setting the Visible property to false
+                    Application.DoEvents();
+                    NativeMethods.SendKeysPaste();
+                }
             }
             catch (Exception ex) when (ex is NullReferenceException) { }
             finally { Close(); }

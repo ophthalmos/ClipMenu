@@ -24,7 +24,7 @@ namespace ClipMenu
 
         }
 
-        private void FrmClipEdite_Load(object sender, EventArgs e)
+        private void FrmClipEdit_Load(object sender, EventArgs e)
         {
             Utilities.IsEditOpen = true; // s. Utilities (am Ende)
             Rectangle workingArea = Screen.PrimaryScreen.WorkingArea;
@@ -108,16 +108,13 @@ namespace ClipMenu
         {
             try
             {
-                Hide(); // Hiding is equivalent to setting the Visible property to false
                 Clipboard.Clear();
                 if (Application.OpenForms[0] is FrmClipMenu form) { form.IgnoreClipboardChange = true; }
-                if (!Utilities.SetClipboardText(textBox.Text))
-                {
-                    Utilities.ErrorMsgTaskDlg(Handle, "Es ist ein Fehler aufgetreten.\nVersuchen Sie es noch einmal.");
-                    Show();
-                }
+                if (!Utilities.SetClipboardText(textBox.Text)) { Utilities.ErrorMsgTaskDlg(Handle, "Es ist ein Fehler aufgetreten.\nVersuchen Sie es noch einmal."); }
                 else
                 {
+                    Hide(); // Hiding is equivalent to setting the Visible property to false
+                    Application.DoEvents();
                     if (!NativeMethods.SendKeysPaste())
                     {
                         Utilities.ErrorMsgTaskDlg(Handle, "Es ist ein Fehler aufgetreten.\nVersuchen Sie es noch einmal.");
@@ -220,27 +217,34 @@ namespace ClipMenu
         }
         public void SearchFor_Find(string searchFor, bool checkCase)
         {
+            bool success = false;
             caseChecked = checkCase;
             searchString = string.IsNullOrEmpty(searchFor) ? searchString : searchFor;
             if (string.IsNullOrEmpty(searchString)) { return; }
-            if (searchStart == 0)
+            else { Utilities.SearchHistory.Insert(0, searchString); }
+            Regex rgx = new(searchString, caseChecked ? RegexOptions.None : RegexOptions.IgnoreCase);
+            if (searchStart > textBox.Text.Length - 1) { searchStart = -1; }
+            Match match1 = rgx.Match(textBox.Text, searchStart + 1);
+            if (match1.Success)
             {
-                Match match = Regex.Match(textBox.Text, searchString, caseChecked ? RegexOptions.None : RegexOptions.IgnoreCase);
-                if (match.Success) { searchStart = match.Index; }
+                searchStart = match1.Index;
+                success = true;
             }
-            //searchStart = textBox.Text.IndexOf(searchString, 0); } //, caseChecked ? StringComparison.InvariantCulture : StringComparison.InvariantCultureIgnoreCase); }
-            else
+            else if (searchStart > 0) // von vorne weitersuchen
             {
-                if (searchStart > textBox.Text.Length - 1) { searchStart = -1; }
-                Match match = new Regex(searchString, caseChecked ? RegexOptions.None : RegexOptions.IgnoreCase).Match(textBox.Text, searchStart + 1);
-                if (match.Success) { searchStart = match.Index; }
+                Match match2 = rgx.Match(textBox.Text);
+                if (match2.Success)
+                {
+                    searchStart = match2.Index;
+                    success = true;
+                }
             }
-            //   searchStart = textBox.Text.IndexOf(searchString, searchStart + 1); //, caseChecked ? StringComparison.InvariantCulture : StringComparison.InvariantCultureIgnoreCase);
             if (searchStart >= 0)
             {
                 textBox.SelectionStart = searchStart;
-                textBox.SelectionLength = searchString.Length;
+                textBox.SelectionLength = success ? searchString.Length : 0;
                 textBox.Select();
+                textBox.ScrollToCaret();
             }
         }
 

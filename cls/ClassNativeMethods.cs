@@ -1,6 +1,6 @@
-﻿using System.Runtime.InteropServices;
+﻿using System.Globalization;
+using System.Runtime.InteropServices;
 using System.Text;
-using System.Linq;
 
 namespace ClipMenu
 {
@@ -14,8 +14,10 @@ namespace ClipMenu
         internal const int VK_LCONTROL = 0xA2;
         internal const int VK_LSHIFT = 0xA0; //	Linke UMSCHALTTASTE
         internal const int VK_LWIN = 0x5B;
+        internal const int WM_CONTEXTMENU = 0x007B;
 
         private const int WM_KEYDOWN = 0x0100; // 256
+        private const int WM_KEYUP = 0x0101;
         private const int WM_XBUTTONDOWN = 0x20B;
         private const int WM_XBUTTONUP = 0x020C;
         private const int HC_ACTION = 0;
@@ -38,8 +40,39 @@ namespace ClipMenu
         internal const int WM_CLIPEDIT_MSG = WM_USER + 1; // ClipEdit ⇒ ClipMenu.dontHide
         internal const int WM_CLIPCALC_MSG = WM_USER + 2; // ClipEdit ⇒ ClipMenu.dontHide
 
+        internal const int POWER_REQUEST_CONTEXT_VERSION = 0;
+        internal const int POWER_REQUEST_CONTEXT_SIMPLE_STRING = 0x1;
+        internal const int POWER_REQUEST_CONTEXT_DETAILED_STRING = 0x2;
+
         internal static IntPtr lastActiveWindow;  // List<IntPtr> hwndList = new(3);
         internal enum Modifiers : uint { Alt = 0x0001, Control = 0x0002, Shift = 0x0004, Win = 0x0008 }
+
+
+        //[DllImport("kernel32.dll", SetLastError = true)]
+        //internal static extern IntPtr PowerCreateRequest(ref POWER_REQUEST_CONTEXT Context);
+
+        //[DllImport("kernel32.dll", SetLastError = true)]
+        //internal static extern bool PowerSetRequest(IntPtr PowerRequestHandle, PowerRequestType RequestType);
+
+        //[DllImport("kernel32.dll", SetLastError = true)]
+        //internal static extern bool PowerClearRequest(IntPtr PowerRequestHandle, PowerRequestType RequestType);
+
+        //[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+        //internal struct POWER_REQUEST_CONTEXT
+        //{
+        //    public uint Version;
+        //    public uint Flags;
+        //    [MarshalAs(UnmanagedType.LPWStr)]
+        //    public string SimpleReasonString;
+        //}
+
+        //internal enum PowerRequestType
+        //{
+        //    PowerRequestDisplayRequired = 0,
+        //    PowerRequestSystemRequired,
+        //    PowerRequestAwayModeRequired,
+        //    PowerRequestExecutionRequired
+        //}
 
         [DllImport("user32.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]
@@ -81,8 +114,8 @@ namespace ClipMenu
         [DllImport("user32.dll", CharSet = CharSet.Unicode, CallingConvention = CallingConvention.StdCall)]
         internal static extern short GetKeyState(int nVirtKey);
 
-        [DllImport("user32.dll", CharSet = CharSet.Unicode, CallingConvention = CallingConvention.StdCall)]
-        internal static extern bool GetAsyncKeyState(int nVirtKey);
+        //[DllImport("user32.dll", CharSet = CharSet.Unicode, CallingConvention = CallingConvention.StdCall)]
+        //internal static extern bool GetAsyncKeyState(int nVirtKey);
 
         [DllImport("user32.dll", CallingConvention = CallingConvention.StdCall, SetLastError = true, CharSet = CharSet.Unicode)]
         private static extern IntPtr SetWindowsHookEx(int idHook, LowLevelKeyboardProc lpfn, IntPtr hInstance, int threadId);
@@ -120,11 +153,12 @@ namespace ClipMenu
             SendKeyUp(KeyCode.KEY_C);
             SendKeyUp(KeyCode.VK_RCONTROL);
         }
-
+        
         internal static bool SendKeysPaste() // Tuple<bool, string> 
         {
             if (SetForegroundWindow(lastActiveWindow) || SetForegroundWindow(GetForegroundWindow()))
             {
+                Thread.Sleep(20);  // Warte kurz, um sicherzustellen, dass das andere Programm aktiv ist
                 SendKeyDown(KeyCode.VK_CONTROL);
                 SendKeyDown(KeyCode.KEY_V);
                 //SendKeyDown(KeyCode.VK_SHIFT);
@@ -139,7 +173,6 @@ namespace ClipMenu
             }
             return false;
         }
-
         internal static void SendKeysAltTab()
         {
             SendKeyDown(KeyCode.VK_LMENU);
@@ -186,14 +219,27 @@ namespace ClipMenu
                     KeyDown(Application.OpenForms["FrmClipMenu"], new KeyEventArgs(keys));
                     return 1;
                 }
+                else if (keys == Keys.Apps && (Application.OpenForms?["FrmClipMenu"] as FrmClipMenu).AltTabApps) // ShiftAltTab ergibt sich von selbst, wenn User Shift gleichzeitig drückt
+                {
+                    KeyDown(Application.OpenForms["FrmClipMenu"], new KeyEventArgs(keys));
+                    return 0;
+                }
             }
-            else if (nCode >= 0 && wParam == WM_KEYDOWN)
+            //else if (nCode >= 0 && wParam == WM_KEYDOWN)
+            //{
+            //    KBDLLHOOKSTRUCT kbStruct = (KBDLLHOOKSTRUCT)Marshal.PtrToStructure(lParam, typeof(KBDLLHOOKSTRUCT));
+            //    Keys keys = (Keys)kbStruct.vkCode;
+            //    if (keys == Keys.RWin && (Application.OpenForms?["FrmClipMenu"] as FrmClipMenu).AltTabRWin) { return 1; }
+            //    else if (keys == Keys.Apps && (Application.OpenForms?["FrmClipMenu"] as FrmClipMenu).AltTabApps) { return 1; }
+            //    else if (keys == Keys.R && (GetKeyState(VK_LCONTROL) & 0x8000) != 0 && (GetKeyState(VK_LWIN) & 0x8000) != 0) { return 1; }
+            //    else if (keys == Keys.Insert && (GetKeyState(VK_LCONTROL) & 0x8000) != 0 && (GetKeyState(VK_LWIN) & 0x8000) != 0) { return 1; }
+            //}
+            else if (nCode >= 0 && wParam == WM_KEYUP)
             {
                 KBDLLHOOKSTRUCT kbStruct = (KBDLLHOOKSTRUCT)Marshal.PtrToStructure(lParam, typeof(KBDLLHOOKSTRUCT));
                 Keys keys = (Keys)kbStruct.vkCode;
                 if (keys == Keys.RWin && (Application.OpenForms?["FrmClipMenu"] as FrmClipMenu).AltTabRWin) { return 1; }
-                else if (keys == Keys.R && (GetKeyState(VK_LCONTROL) & 0x8000) != 0 && (GetKeyState(VK_LWIN) & 0x8000) != 0) { return 1; }
-                else if (keys == Keys.Insert && (GetKeyState(VK_LCONTROL) & 0x8000) != 0 && (GetKeyState(VK_LWIN) & 0x8000) != 0) { return 1; }
+                else if (keys == Keys.Apps && (Application.OpenForms?["FrmClipMenu"] as FrmClipMenu).AltTabApps) { return 1; }
             }
             return CallNextHookEx(_hookIDKeyboard, nCode, wParam, lParam);
         }
@@ -307,7 +353,8 @@ namespace ClipMenu
             VK_LMENU = 0xA4,
             VK_TAB = 0x09,
             VK_LWIN = 0x5B,
-            VK_RWIN = 0x5C
+            VK_RWIN = 0x5C,
+            VK_APPS = 0x5D
         }
 
         [DllImport("user32.dll", SetLastError = true)]
@@ -321,17 +368,25 @@ namespace ClipMenu
         [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode, CallingConvention = CallingConvention.Cdecl)]
         private static extern int GetWindowTextLength(IntPtr hWnd);
 
-        [DllImport("user32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
-        internal static extern int GetWindowText(IntPtr hWnd, StringBuilder lpString, int nMaxCount);
+        //[DllImport("user32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+        //internal static extern int GetWindowText(IntPtr hWnd, StringBuilder lpString, int nMaxCount);
 
+        [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+        private static extern int GetClassName(IntPtr hWnd, StringBuilder lpClassName, int nMaxCount);
+
+        private static bool ClassName_ShellTray(IntPtr hwnd)
+        {
+            StringBuilder lpClassName = new(256);
+            return GetClassName(hwnd, lpClassName, lpClassName.Capacity) != 0 && string.CompareOrdinal(lpClassName.ToString(), "Shell_TrayWnd") == 0;
+        }
 
         internal static void WinEventProc(IntPtr hWinEventHook, uint eventType, IntPtr hwnd, int idObject, int idChild, uint dwEventThread, uint dwmsEventTime)
         { //https://devblogs.microsoft.com/oldnewthing/20130930-00/?p=3083 // if (hwnd && idObject == OBJID_WINDOW && idChild == CHILDID_SELF && event == EVENT_SYSTEM_FOREGROUND)
             List<IntPtr> formHandles = [];
             formHandles.AddRange(from Form form in Application.OpenForms where form.Name != "FrmClipEdit" select form.Handle);
-            if (hwnd != IntPtr.Zero && idObject == 0x00000000 && idChild == 0 && eventType == EVENT_SYSTEM_FOREGROUND && lastActiveWindow != hwnd &&
-                GetWindowTextLength(hwnd) > 0 && !formHandles.Contains(hwnd)) { lastActiveWindow = hwnd; } // ["ClipMenu"] funktioniert nicht!
-        } //Shell_TrayWnd muss elimniert werden (hat keinen WindowText); Restore from Minimize wird problemlos erfasst
+            if (hwnd != IntPtr.Zero && idObject == 0x00000000 && idChild == 0 && eventType == EVENT_SYSTEM_FOREGROUND &&
+              !ClassName_ShellTray(hwnd) && !formHandles.Contains(hwnd)) { lastActiveWindow = hwnd; }
+        } //Restore from Minimize wird problemlos erfasst
     }
 
 }

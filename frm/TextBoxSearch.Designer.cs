@@ -36,6 +36,8 @@
             // 
             // cbxSearch
             // 
+            cbxSearch.AutoCompleteMode = AutoCompleteMode.SuggestAppend;
+            cbxSearch.AutoCompleteSource = AutoCompleteSource.ListItems;
             cbxSearch.FormattingEnabled = true;
             cbxSearch.Location = new Point(12, 12);
             cbxSearch.Name = "cbxSearch";
@@ -51,7 +53,6 @@
             checkCase.TabIndex = 2;
             checkCase.Text = "Groß-/Kleinschreibung beachten";
             checkCase.UseVisualStyleBackColor = true;
-            checkCase.CheckedChanged += CheckCase_CheckedChanged;
             // 
             // btnSearch
             // 

@@ -1,16 +1,29 @@
 ﻿using System.Drawing.Imaging;
+using System.IO;
 using System.Runtime.InteropServices;
 
 namespace ClipMenu
 {
     public partial class ImageView : Form
     {
-        public ImageView(Image image)
+        private readonly string defaultPath = string.Empty;
+
+        public ImageView(Image image, string pictureUserPath)
         {
             InitializeComponent();
             pictureBox.ClientSize = new Size(image.Width, image.Height);
             pictureBox.Image = image;
             Text = pictureBox.Width.ToString() + "x" + pictureBox.Height.ToString();
+            defaultPath = !string.IsNullOrEmpty(pictureUserPath) ? pictureUserPath : Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+            ToolStripControlHost host = new(new TextBox())
+            {
+                Name = "textboxToolStripMenuItem",
+                AutoSize = true,
+                Text = defaultPath,
+                BackColor = SystemColors.Window,
+                Enabled = false
+            };
+            editToolStripMenuItem.DropDownItems.Add(host);
         }
 
         protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
@@ -33,6 +46,7 @@ namespace ClipMenu
         private void PatientPhotoToolStripMenuItem_Click(object sender, EventArgs e)
         {
             int newWidth, newHeight;
+            string path;
             if (pictureBox.Image.Width / pictureBox.Height > 0.75) // Bild ist zu breit
             {
                 newHeight = 320;
@@ -45,7 +59,12 @@ namespace ClipMenu
             }
             try
             {
-                string path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "Patientenbild.jpg");
+                if (!Directory.Exists(defaultPath))
+                {
+                    Utilities.ErrorMsgTaskDlg(Handle, defaultPath + Environment.NewLine + "Der Zielordner wurde nicht gefunden.", TaskDialogIcon.Information);
+                    return;
+                }
+                else { path = Path.Combine(defaultPath, "Patientenbild.jpg"); }
                 new Bitmap(new Bitmap(pictureBox.Image), new Size(newWidth, newHeight)).Save(path, ImageFormat.Jpeg);
                 Utilities.ErrorMsgTaskDlg(Handle, path + "," + Environment.NewLine + newWidth + " × " + newHeight + " Pixel, erfolgreich gespeichert.", TaskDialogIcon.Information);
                 Close();

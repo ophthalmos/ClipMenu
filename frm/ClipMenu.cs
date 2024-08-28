@@ -14,6 +14,7 @@ namespace ClipMenu
     {
         internal bool IgnoreClipboardChange { get { return ignoreClipboardChange; } set { ignoreClipboardChange = value; } }
         internal bool AltTabRWin { get { return altTabRWin; } set { altTabRWin = value; } }
+        internal bool AltTabApps { get { return altTabApps; } set { altTabApps = value; } }
 
         private readonly int horizMargins = 6;
         private readonly int vertMargins = 6;
@@ -31,11 +32,13 @@ namespace ClipMenu
         private readonly int maxTextLength = 8000000;
         private readonly string xmlPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), appName, appName + ".xml");
         private int maxItems = 50;
+        private string imagePath = string.Empty;
         private bool passwdExcld = true;
         private bool plainText = false;
         private bool visualResponse = false;
         private bool acousticResponse = false;
         private bool altTabRWin = false;
+        private bool altTabApps = false;
         private bool altTabXBtn = false;
         private bool datesExpanded = true;
         private bool snippetsExpanded = true;
@@ -135,6 +138,11 @@ namespace ClipMenu
                         checkBoxRWin.Checked = altTabRWin = bool.TryParse(element.Element("AltTabRWin").Value, out altTabRWin) && altTabRWin;
                     }
 
+                    if (element.Element("AltTabApps") != null)
+                    {
+                        checkBoxMenuKey.Checked = altTabApps = bool.TryParse(element.Element("AltTabApps").Value, out altTabApps) && altTabApps;
+                    }
+
                     if (element.Element("AltTabXBtn") != null)
                     {
                         checkBoxXButton.Checked = altTabXBtn = bool.TryParse(element.Element("AltTabXBtn").Value, out altTabXBtn) && altTabXBtn;
@@ -159,6 +167,10 @@ namespace ClipMenu
                     {
                         string[] coords = element.Element("FormSize").Value.Split(',');
                         Size = new Size(int.Parse(coords[0]), int.Parse(coords[1]));
+                    }
+                    if (element.Element("ImagePath") != null)
+                    {
+                        imagePath = element.Element("ImagePath").Value;
                     }
                 }
                 foreach (XElement element in xDocument.Root.Descendants("Dates"))
@@ -279,6 +291,7 @@ namespace ClipMenu
                 else { new FrmClipEdit(dataTable.Rows.Count > 0 && dataTable.Rows[0]["Type"].ToString().Equals("text") ? dataTable.Rows[0]["Text"].ToString() : string.Empty, medistarRef).Show(); }
             }
             else if (e.KeyCode == Keys.RWin) { NativeMethods.SendKeysAltTab(); }
+            else if (e.KeyCode == Keys.Apps) { NativeMethods.SendKeysAltTab(); }
             e.Handled = true;
         }
 
@@ -346,6 +359,8 @@ namespace ClipMenu
 
         private void ExitApplicationJob()
         {
+            //timerSuspend.Enabled = false;
+            //Utilities.EnableStandby(Handle);
             NativeMethods.UnhookWinEvent(hWinEventHook);
             NativeMethods.UnregisterHotKey(Handle, NativeMethods.HOTKEY_ID1);
             NativeMethods.UnregisterHotKey(Handle, NativeMethods.HOTKEY_ID2);
@@ -952,7 +967,7 @@ namespace ClipMenu
                         else if (Clipboard.ContainsAudio())
                         {
                             Stream data = Clipboard.GetAudioStream();
-                            if (data != null) { MessageBox.Show(data.ToString() + Environment.NewLine + "Not yet implemented"); }
+                            if (data != null) { Utilities.ErrorMsgTaskDlg(Handle, data.ToString() + Environment.NewLine + "Not yet implemented"); }
                         }
                     }
                     catch { }
@@ -960,6 +975,7 @@ namespace ClipMenu
                 else { ignoreClipboardChange = false; }
                 m.Result = IntPtr.Zero;
             }
+            //else if (m.Msg == NativeMethods.WM_CONTEXTMENU) { Console.Beep(); m.Result = IntPtr.Zero; return; }
             else if (m.Msg == NativeMethods.WM_HOTKEY) // Send as plain text
             {
                 if (Clipboard.ContainsText())
@@ -989,6 +1005,7 @@ namespace ClipMenu
             else if (m.Msg == NativeMethods.WM_CLIPEDIT_MSG || m.Msg == NativeMethods.WM_CLIPCALC_MSG)
             {
                 if (dontHide) { dontHide = newButton.Checked = false; }
+                //m.Result = IntPtr.Zero;
             }
             else { base.WndProc(ref m); }
         }
@@ -1003,11 +1020,13 @@ namespace ClipMenu
             element.Add(new XElement("VisualResponse", visualResponse.ToString()));
             element.Add(new XElement("AcousticResponse", acousticResponse.ToString()));
             element.Add(new XElement("AltTabRWin", altTabRWin.ToString()));
+            element.Add(new XElement("AltTabApps", altTabApps.ToString()));
             element.Add(new XElement("AltTabXBtn", altTabXBtn.ToString()));
             element.Add(new XElement("DatesExpanded", treeView.Nodes["Dates"].IsExpanded));
             element.Add(new XElement("SnippetsExpanded", treeView.Nodes["Snippets"].IsExpanded));
             element.Add(new XElement("SymbolsExpanded", treeView.Nodes["Symbols"].IsExpanded));
             element.Add(new XElement("FormSize", Width.ToString() + "," + Height.ToString()));
+            element.Add(new XElement("ImagePath", imagePath));
             return element;
         }
 
@@ -1025,10 +1044,7 @@ namespace ClipMenu
             }
             else
             {
-                if (NativeMethods.SetForegroundWindow(NativeMethods.lastActiveWindow))
-                {
-                    NativeMethods.SendKeysCopy(); //SendKeys.SendWait("^(c)");
-                }
+                if (NativeMethods.SetForegroundWindow(NativeMethods.lastActiveWindow)) { NativeMethods.SendKeysCopy(); } //SendKeys.SendWait("^(c)");
             }
             Show(); // auf InsertClipboard warten
             timer.Enabled = true; //new Thread(new ThreadStart(ThreadJob)) { IsBackground = true }.Start(); // führte auf langsamem PC zum Absturz
@@ -1042,11 +1058,10 @@ namespace ClipMenu
             tabControl.SelectedIndex = 0;
         }
 
-        private void SendText(int index = -1)
+        private void SendText(int index = -1, bool file2txt = false)
         {
             try
             { //SendKeys.SendWait("%{ESC}"); // Alt+Escape
-                Hide(); // Hiding is equivalent to setting the Visible property to false
                 ignoreClipboardChange = true;
                 Clipboard.Clear();
                 index = index == -1 ? listBox.SelectedIndex : index;
@@ -1054,6 +1069,7 @@ namespace ClipMenu
                 if (foundRow != null)
                 {
                     //if (Utilities.IsEditOpen && Application.OpenForms["FrmClipEdit"] is FrmClipEdit frmClipEdit) { frmClipEdit.TopMost = false; }
+                    if (file2txt) { foundRow["Type"] = "text"; file2txt = false; }
                     ignoreClipboardChange = true;
                     if (foundRow["Type"].ToString().Equals("image"))
                     {
@@ -1061,7 +1077,7 @@ namespace ClipMenu
                         if (image == null) // || !Utilities.SetClipboardImage(image)
                         {
                             Utilities.ErrorMsgTaskDlg(Handle, "Es ist ein Fehler aufgetreten.\nVersuchen Sie es noch einmal.");
-                            Show();
+                            //Show();
                             return;
                         }
                         else { Clipboard.SetImage(image); }
@@ -1070,23 +1086,41 @@ namespace ClipMenu
                     {
                         System.Collections.Specialized.StringCollection stC = [];
                         stC.AddRange((string[])foundRow["Text"].ToString().Split(Environment.NewLine.ToCharArray())); //string[] lines = foundRow["Text"].ToString().Split(new string[] { Environment.NewLine }, StringSplitOptions.None);
+                        //MessageBox.Show(stC.Count.ToString());
                         if (stC == null) // !Utilities.SetClipboardFiles(stC))
                         {
                             Utilities.ErrorMsgTaskDlg(Handle, "Es ist ein Fehler aufgetreten.\nVersuchen Sie es noch einmal.");
-                            Show();
+                            //Show();
                             return;
                         }
-                        else { Clipboard.SetFileDropList(stC); }
+                        else
+                        {
+                            try
+                            {
+                                Clipboard.SetFileDropList(stC);
+                                //Thread t = new(() => { Clipboard.SetFileDropList(stC); });  //>Call from an STA thread
+                                //t.SetApartmentState(ApartmentState.STA);
+                                //t.Start(); //Clipboard.SetFileDropList(stC);
+
+                                //while (!t.IsAlive) { Thread.Sleep(1); }  // Wait for thread to get started
+                                //Thread.Sleep(1); // Wait a tick more (@see: http://scn.sap.com/thread/45710)
+                                //t.Join(); //wait for the dialog thread to finish
+                            }
+                            catch (Exception) { }
+                        }
                     }
                     else
                     {
                         if (!Utilities.SetClipboardText(foundRow["Text"].ToString()))
                         {
                             Utilities.ErrorMsgTaskDlg(Handle, "Es ist ein Fehler aufgetreten.\nVersuchen Sie es noch einmal.");
-                            Show();
+                            //Show();
                             return;
                         }
                     }
+                    Hide(); // Hiding is equivalent to setting the Visible property to false
+                    Application.DoEvents();
+
                     dataTable.Rows.RemoveAt(index);
                     dataTable.AcceptChanges();
                     lboxTable = Utilities.DataTable2LBoxDataTable(dataTable, maxDisplayChars);
@@ -1098,7 +1132,7 @@ namespace ClipMenu
                 }
                 else { Utilities.ErrorMsgTaskDlg(Handle, "Der Text wurde nicht gefunden!"); }
             }
-            catch (Exception ex) when (ex is NullReferenceException) { }
+            catch (Exception ex) when (ex is NullReferenceException || ex is ArgumentException) { }
         }
 
         private void SendSnippet(string text)
@@ -1148,16 +1182,18 @@ namespace ClipMenu
             else if (lboxTable.Rows[listBox.SelectedIndex]["Type"].ToString().Equals("image"))
             {
                 snippetToolStripMenuItem.Text = "Anzeigen";
-                tsConvertSubMenu.Visible = toolStripSeparator5.Visible = false;
+                file2TxtStripMenuItem.Visible = tsConvertSubMenu.Visible = toolStripSeparator5.Visible = false;
             }
             else if (lboxTable.Rows[listBox.SelectedIndex]["Type"].ToString().Equals("file"))
             {
                 snippetToolStripMenuItem.Visible = toolStripSeparator6.Visible = tsConvertSubMenu.Visible = toolStripSeparator5.Visible = false;
+                file2TxtStripMenuItem.Visible = true;
             }
             else
             {
                 snippetToolStripMenuItem.Text = "Sammeln";
                 snippetToolStripMenuItem.Visible = tsConvertSubMenu.Visible = toolStripSeparator5.Visible = toolStripSeparator6.Visible = true;
+                file2TxtStripMenuItem.Visible = false;
             }
         }
 
@@ -1309,8 +1345,9 @@ namespace ClipMenu
                     if (image != null)
                     {
                         dontHide = true;
-                        using ImageView f = new(image);
+                        using ImageView f = new(image, imagePath);
                         f.ShowDialog();
+                        //imagePath = f.PictureUserPath;
                     }
                 }
                 else
@@ -1567,6 +1604,11 @@ namespace ClipMenu
             if (checkBoxRWin.Focused) { altTabRWin = checkBoxRWin.Checked; }
         }
 
+        private void CheckBoxMenuKey_CheckedChanged(object sender, EventArgs e)
+        {
+            if (checkBoxMenuKey.Focused) { altTabApps = checkBoxMenuKey.Checked; }
+        }
+
         private void CheckBoxXButton_CheckedChanged(object sender, EventArgs e)
         {
             if (checkBoxXButton.Focused) { altTabXBtn = checkBoxXButton.Checked; }
@@ -1661,5 +1703,8 @@ namespace ClipMenu
         {
             if (cbxAcousticResponse.Focused) { acousticResponse = cbxAcousticResponse.Checked; }
         }
+
+        private void File2TxtStripMenuItem_Click(object sender, EventArgs e) { SendText(-1, true); }
+
     }
 }

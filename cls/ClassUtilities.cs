@@ -6,7 +6,6 @@ using System.Drawing.Imaging;
 using System.Globalization;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
 
@@ -14,6 +13,7 @@ namespace ClipMenu
 {
     internal static class Utilities
     {
+        //private static IntPtr currentPowerRequest;
 
         //internal static void LogEvent(string message = "", string logPath = "")
         //{
@@ -386,6 +386,41 @@ namespace ClipMenu
             }
             return default;
         }
+
+        //internal static void SuppressStandby(IntPtr hwnd)
+        //{
+        //    if (currentPowerRequest != IntPtr.Zero) // Clear current power request if there is any.
+        //    {
+        //        NativeMethods.PowerClearRequest(currentPowerRequest, NativeMethods.PowerRequestType.PowerRequestSystemRequired);
+        //        currentPowerRequest = IntPtr.Zero;
+        //    }
+        //    NativeMethods.POWER_REQUEST_CONTEXT pContext;  // Create new power request.
+        //    pContext.Flags = NativeMethods.POWER_REQUEST_CONTEXT_SIMPLE_STRING;
+        //    pContext.Version = NativeMethods.POWER_REQUEST_CONTEXT_VERSION;
+        //    pContext.SimpleReasonString = "Standby suppressed by PowerAvailabilityRequests.exe"; // shown when the command "powercfg -requests" is executed.
+        //    currentPowerRequest = NativeMethods.PowerCreateRequest(ref pContext);
+        //    if (currentPowerRequest == IntPtr.Zero) { ErrorMsgTaskDlg(hwnd, "Failed to create power request."); }
+        //    if (!NativeMethods.PowerSetRequest(currentPowerRequest, NativeMethods.PowerRequestType.PowerRequestSystemRequired))
+        //    {
+        //        ErrorMsgTaskDlg(hwnd, "Failed to set power request.");
+        //        currentPowerRequest = IntPtr.Zero;
+        //    }
+        //}
+
+        //internal static void EnableStandby(IntPtr hwnd)
+        //{
+        //    if (currentPowerRequest != IntPtr.Zero)
+        //    {
+        //        if (!NativeMethods.PowerClearRequest(currentPowerRequest, NativeMethods.PowerRequestType.PowerRequestSystemRequired))
+        //        {
+        //            ErrorMsgTaskDlg(hwnd, "Failed to clear power request.");
+        //            currentPowerRequest = IntPtr.Zero;
+        //        }
+        //        else { currentPowerRequest = IntPtr.Zero; }
+        //    }
+        //}
+
+        public static List<string> SearchHistory { get; set; }
 
         // Statische Klasse zum Verwalten des Zustands von Form2 // public static class FormManager // {
         private static bool clipCalcIsOpen = false;
