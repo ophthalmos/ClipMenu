@@ -33,6 +33,7 @@ namespace ClipMenu
         internal const int EVENT_SYSTEM_MINIMIZEEND = 0x0017;
 
         internal const int WM_HOTKEY = 0x312;
+        internal const int HOTKEY_ID0 = 0x0311;
         internal const int HOTKEY_ID1 = 0x0312;
         internal const int HOTKEY_ID2 = 0x0313;
 
@@ -145,25 +146,23 @@ namespace ClipMenu
 
         internal static void SendKeysCopy()
         {
-            SendKeyDown(KeyCode.VK_RCONTROL);
-            //SendKeyDown(KeyCode.VK_INSERT);
+            SendKeyDown(KeyCode.VK_CONTROL);
             SendKeyDown(KeyCode.KEY_C);
             Thread.Sleep(70);
-            //SendKeyUp(KeyCode.VK_INSERT);
             SendKeyUp(KeyCode.KEY_C);
-            SendKeyUp(KeyCode.VK_RCONTROL);
+            SendKeyUp(KeyCode.VK_CONTROL);
         }
-        
+
         internal static bool SendKeysPaste() // Tuple<bool, string> 
         {
             if (SetForegroundWindow(lastActiveWindow) || SetForegroundWindow(GetForegroundWindow()))
             {
-                Thread.Sleep(20);  // Warte kurz, um sicherzustellen, dass das andere Programm aktiv ist
+                Thread.Sleep(150);  // Warte kurz, um sicherzustellen, dass das andere Programm aktiv ist
                 SendKeyDown(KeyCode.VK_CONTROL);
                 SendKeyDown(KeyCode.KEY_V);
                 //SendKeyDown(KeyCode.VK_SHIFT);
                 //SendKeyDown(KeyCode.VK_INSERT);
-                Thread.Sleep(70);
+                //Thread.Sleep(70);
                 //SendKeyUp(KeyCode.VK_INSERT);
                 //SendKeyUp(KeyCode.VK_SHIFT);
                 SendKeyUp(KeyCode.KEY_V);
@@ -387,6 +386,6 @@ namespace ClipMenu
             if (hwnd != IntPtr.Zero && idObject == 0x00000000 && idChild == 0 && eventType == EVENT_SYSTEM_FOREGROUND &&
               !ClassName_ShellTray(hwnd) && !formHandles.Contains(hwnd)) { lastActiveWindow = hwnd; }
         } //Restore from Minimize wird problemlos erfasst
-    }
 
+    }
 }

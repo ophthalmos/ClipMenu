@@ -1,5 +1,4 @@
 ﻿using System.Drawing.Imaging;
-using System.IO;
 using System.Runtime.InteropServices;
 
 namespace ClipMenu
@@ -17,9 +16,8 @@ namespace ClipMenu
             defaultPath = !string.IsNullOrEmpty(pictureUserPath) ? pictureUserPath : Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
             ToolStripControlHost host = new(new TextBox())
             {
-                Name = "textboxToolStripMenuItem",
                 AutoSize = true,
-                Text = defaultPath,
+                Text = pictureUserPath,
                 BackColor = SystemColors.Window,
                 Enabled = false
             };

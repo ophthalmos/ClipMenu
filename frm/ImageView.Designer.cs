@@ -35,6 +35,7 @@
             exitToolStripMenuItem = new ToolStripMenuItem();
             editToolStripMenuItem = new ToolStripMenuItem();
             patientPhotoToolStripMenuItem = new ToolStripMenuItem();
+            xmlImagePathToolStripMenuItem = new ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)pictureBox).BeginInit();
             menuStrip.SuspendLayout();
             SuspendLayout();
@@ -69,13 +70,13 @@
             // 
             exitToolStripMenuItem.Name = "exitToolStripMenuItem";
             exitToolStripMenuItem.ShortcutKeyDisplayString = "Esc";
-            exitToolStripMenuItem.Size = new Size(180, 22);
+            exitToolStripMenuItem.Size = new Size(144, 22);
             exitToolStripMenuItem.Text = "Beenden";
             exitToolStripMenuItem.Click += ExitToolStripMenuItem_Click;
             // 
             // editToolStripMenuItem
             // 
-            editToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { patientPhotoToolStripMenuItem });
+            editToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { patientPhotoToolStripMenuItem, xmlImagePathToolStripMenuItem });
             editToolStripMenuItem.Name = "editToolStripMenuItem";
             editToolStripMenuItem.Size = new Size(75, 20);
             editToolStripMenuItem.Text = "Bearbeiten";
@@ -87,6 +88,13 @@
             patientPhotoToolStripMenuItem.Size = new Size(230, 22);
             patientPhotoToolStripMenuItem.Text = "Patientenbild erstellen";
             patientPhotoToolStripMenuItem.Click += PatientPhotoToolStripMenuItem_Click;
+            // 
+            // xmlImagePathToolStripMenuItem
+            // 
+            xmlImagePathToolStripMenuItem.Enabled = false;
+            xmlImagePathToolStripMenuItem.Name = "xmlImagePathToolStripMenuItem";
+            xmlImagePathToolStripMenuItem.Size = new Size(230, 22);
+            xmlImagePathToolStripMenuItem.Text = "»ImagePatth« in XML-File: ";
             // 
             // ImageView
             // 
@@ -119,5 +127,6 @@
         private ToolStripMenuItem exitToolStripMenuItem;
         private ToolStripMenuItem editToolStripMenuItem;
         private ToolStripMenuItem patientPhotoToolStripMenuItem;
+        private ToolStripMenuItem xmlImagePathToolStripMenuItem;
     }
 }

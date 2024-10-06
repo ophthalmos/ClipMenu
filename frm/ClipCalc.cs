@@ -243,11 +243,7 @@ namespace ClipMenu
             {
                 Clipboard.Clear();
                 if (Application.OpenForms[0] is FrmClipMenu form) { form.IgnoreClipboardChange = true; }
-                if (!Utilities.SetClipboardText(text))
-                {
-                    Utilities.ErrorMsgTaskDlg(Handle, "Es ist ein Fehler aufgetreten.\nVersuchen Sie es noch einmal.");
-                    //Show();
-                }
+                if (!Utilities.SetClipboardText(text)) { Utilities.ErrorMsgTaskDlg(Handle, "Es ist ein Fehler aufgetreten.\nVersuchen Sie es noch einmal."); }
                 else
                 {
                     Hide(); // Hiding is equivalent to setting the Visible property to false

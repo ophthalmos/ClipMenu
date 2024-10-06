@@ -32,8 +32,10 @@ namespace ClipMenu
         private readonly int maxTextLength = 8000000;
         private readonly string xmlPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), appName, appName + ".xml");
         private int maxItems = 50;
+        private string currNodeText = string.Empty;
         private string imagePath = string.Empty;
         private bool passwdExcld = true;
+        private bool copyNoBreak = false;
         private bool plainText = false;
         private bool visualResponse = false;
         private bool acousticResponse = false;
@@ -57,7 +59,8 @@ namespace ClipMenu
         private CheckBox newButton;
         private int decimalPlaces = -1;
         private readonly string wavPath = Path.Combine(AppContext.BaseDirectory, appName + ".wav");
-        private List<string> listOfKnownColors = [];
+        private readonly List<string> listOfKnownColors = [];
+        private static readonly char[] separatorArray = [' ', '\r', '\n'];
 
         public FrmClipMenu()
         {
@@ -116,6 +119,11 @@ namespace ClipMenu
                     if (element.Element("PasswdExcld") != null)
                     {
                         ckbRegex.Checked = passwdExcld = bool.TryParse(element.Element("PasswdExcld").Value, out passwdExcld) && passwdExcld;
+                    }
+
+                    if (element.Element("CopyNoBreak") != null)
+                    {
+                        checkBoxCopyNoBreak.Checked = copyNoBreak = bool.TryParse(element.Element("CopyNoBreak").Value, out copyNoBreak) && copyNoBreak;
                     }
 
                     if (element.Element("PasteAsPlain") != null)
@@ -191,7 +199,17 @@ namespace ClipMenu
                     treeView.Nodes.Add(node);
                     foreach (XElement childElement in element.Elements())
                     {
-                        TreeNode childNode = new() { Name = childElement.Name.ToString(), Text = childElement.Value };
+                        TreeNode childNode;
+                        if (childElement.Value.Contains('|'))
+                        {
+                            int index = childElement.Value.IndexOf('|');
+                            childNode = new() { Name = childElement.Name.ToString(), Text = childElement.Value[..index], ToolTipText = childElement.Value[(index + 1)..] };
+                        }
+                        else
+                        {
+                            childNode = new() { Name = childElement.Name.ToString(), Text = childElement.Value, };
+                        }
+
                         node.Nodes.Add(childNode);
                     }
                 }
@@ -239,6 +257,8 @@ namespace ClipMenu
 
             treeViewCache = Utilities.CloneTreeView(treeView);
 
+            if (copyNoBreak && NativeMethods.RegisterHotKey(Handle, NativeMethods.HOTKEY_ID0, (uint)(NativeMethods.Modifiers.Shift | NativeMethods.Modifiers.Control), (uint)Keys.C) == false)
+            { Utilities.ErrorMsgTaskDlg(Handle, "Strg+Shift+C konnte nicht registriert werden.\nWahrscheinlich wird die Tastenkombination\nbereits von einer anderen App benutzt."); }
             if (plainText && NativeMethods.RegisterHotKey(Handle, NativeMethods.HOTKEY_ID1, (uint)(NativeMethods.Modifiers.Shift | NativeMethods.Modifiers.Control), (uint)Keys.V) == false)
             { Utilities.ErrorMsgTaskDlg(Handle, "Strg+Shift+V konnte nicht registriert werden.\nWahrscheinlich wird die Tastenkombination\nbereits von einer anderen App benutzt."); }
             if (plainText && NativeMethods.RegisterHotKey(Handle, NativeMethods.HOTKEY_ID2, (uint)(NativeMethods.Modifiers.Shift | NativeMethods.Modifiers.Control), (uint)Keys.Insert) == false)
@@ -246,6 +266,19 @@ namespace ClipMenu
             if (NativeMethods.RegisterAltTabRWin() > 0) { NativeMethods.KeyDown += new KeyEventHandler(GlobalKeyboardHook_KeyDown); }
             if (altTabXBtn) { NativeMethods.RegisterAltTabXBtn(); }
             NativeMethods.SendMessage(snippetSearchBox.Control.Handle, NativeMethods.EM_SETCUEBANNER, 0, "Suche");
+
+            //RegistryKey key = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Clipboard");
+            //if (key != null && (int)key.GetValue("EnableClipboardHistory") == 1) { key.SetValue("EnableClipboardHistory", 0); }
+
+            //using (var searcher = new ManagementObjectSearcher("SELECT UserName FROM Win32_ComputerSystem"))
+            //{
+            //    using (var collection = searcher.Get())
+            //    {
+            //        username = collection.Cast<ManagementBaseObject>().First()["UserName"].ToString();
+            //    }
+            //}
+            //MessageBox.Show("Aktueller Benutzer:" + Environment.NewLine + WindowsIdentity.GetCurrent().Name + Environment.NewLine + Environment.UserName);
+
         }
 
         private void GlobalKeyboardHook_KeyDown(object sender, KeyEventArgs e)
@@ -362,6 +395,7 @@ namespace ClipMenu
             //timerSuspend.Enabled = false;
             //Utilities.EnableStandby(Handle);
             NativeMethods.UnhookWinEvent(hWinEventHook);
+            NativeMethods.UnregisterHotKey(Handle, NativeMethods.HOTKEY_ID0);
             NativeMethods.UnregisterHotKey(Handle, NativeMethods.HOTKEY_ID1);
             NativeMethods.UnregisterHotKey(Handle, NativeMethods.HOTKEY_ID2);
             NativeMethods.UnregisterAltTabRWin();
@@ -660,6 +694,7 @@ namespace ClipMenu
         private void TreeView_BeforeLabelEdit(object sender, NodeLabelEditEventArgs e)
         {
             if (e.Node != null && e.Node.Parent == null) { e.CancelEdit = true; }
+            if (e.Node != null && e.Node.Parent != null) { currNodeText = e.Node.Text; }
         }
 
         private void TreeView_AfterLabelEdit(object sender, NodeLabelEditEventArgs e)
@@ -683,7 +718,7 @@ namespace ClipMenu
             }
             else
             {
-                if (e.Node != null && e.Node.Parent.Name == "Symbols" && e.Node.Text?.Length == 1)
+                if (e.Node != null && (e.Node.Parent.Name == "Symbols" && e.Node.Text?.Length == 1) || (e.Node.Parent.Name == "Texte" && e.Node.Text != currNodeText))
                 {
                     dontHide = true;
                     InputBox inputBox = new(e.Node.Text, "Bitte geben Sie einen ToolTipText ein:", e.Node.ToolTipText);
@@ -735,10 +770,11 @@ namespace ClipMenu
             dr[1] = type;
             dr[2] = text;
             dr[3] = text.Length; // "Char(s)"
-            dr[4] = text.Split(new char[] { ' ', '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries).Length; // "Word(s)"
+            dr[4] = text.Split(separatorArray, StringSplitOptions.RemoveEmptyEntries).Length; // "Word(s)"
             dataTable.Rows.InsertAt(dr, 0);
             if (dataTable.Rows.Count > maxItems) { dataTable.Rows[^1].Delete(); }
             dataTable.AcceptChanges();
+            lboxTable.Clear();
             lboxTable = Utilities.DataTable2LBoxDataTable(dataTable, maxDisplayChars);
             listBox.BeginUpdate();
             listBox.Items.Clear();
@@ -976,7 +1012,22 @@ namespace ClipMenu
                 m.Result = IntPtr.Zero;
             }
             //else if (m.Msg == NativeMethods.WM_CONTEXTMENU) { Console.Beep(); m.Result = IntPtr.Zero; return; }
-            else if (m.Msg == NativeMethods.WM_HOTKEY) // Send as plain text
+
+            else if (m.Msg == NativeMethods.WM_HOTKEY && m.WParam == NativeMethods.HOTKEY_ID0)
+            {
+                NativeMethods.SendKeysCopy();
+                Thread.Sleep(10);
+                Application.DoEvents();
+                DataRow foundRow = dataTable.Rows[0];
+                if (foundRow != null && foundRow["Type"].ToString().Equals("text", StringComparison.Ordinal) && !string.IsNullOrEmpty(foundRow["Text"].ToString()))
+                {
+                    selectedString = foundRow["Text"].ToString();
+                    selecedRow = foundRow;
+                    RemoveLineBreaksToolStripMenuItem_Click(null, null);
+                }
+            }
+
+            else if (m.Msg == NativeMethods.WM_HOTKEY && (m.WParam == NativeMethods.HOTKEY_ID1 || m.WParam == NativeMethods.HOTKEY_ID2)) // Send as plain text
             {
                 if (Clipboard.ContainsText())
                 {
@@ -1016,6 +1067,7 @@ namespace ClipMenu
             element.Add(new XElement("MaxItems", maxItems));
             element.Add(new XElement("DecimalPlaces", decimalPlaces));
             element.Add(new XElement("PasswdExcld", passwdExcld.ToString()));
+            element.Add(new XElement("CopyNoBreak", copyNoBreak.ToString()));
             element.Add(new XElement("PasteAsPlain", plainText.ToString()));
             element.Add(new XElement("VisualResponse", visualResponse.ToString()));
             element.Add(new XElement("AcousticResponse", acousticResponse.ToString()));
@@ -1069,7 +1121,11 @@ namespace ClipMenu
                 if (foundRow != null)
                 {
                     //if (Utilities.IsEditOpen && Application.OpenForms["FrmClipEdit"] is FrmClipEdit frmClipEdit) { frmClipEdit.TopMost = false; }
-                    if (file2txt) { foundRow["Type"] = "text"; file2txt = false; }
+                    if (file2txt)
+                    {
+                        foundRow["Type"] = "text";
+                        file2txt = false;
+                    }
                     ignoreClipboardChange = true;
                     if (foundRow["Type"].ToString().Equals("image"))
                     {
@@ -1121,9 +1177,9 @@ namespace ClipMenu
                     Hide(); // Hiding is equivalent to setting the Visible property to false
                     Application.DoEvents();
 
-                    dataTable.Rows.RemoveAt(index);
-                    dataTable.AcceptChanges();
-                    lboxTable = Utilities.DataTable2LBoxDataTable(dataTable, maxDisplayChars);
+                    //dataTable.Rows.RemoveAt(index);
+                    //dataTable.AcceptChanges();
+                    //lboxTable = Utilities.DataTable2LBoxDataTable(dataTable, maxDisplayChars);
 
                     if (!NativeMethods.SendKeysPaste())
                     {
@@ -1534,12 +1590,31 @@ namespace ClipMenu
             AcceptChanges(selectedIndex);
         }
 
+        private void RemoveSpacesToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            string text = Regex.Replace(selectedString, @"[ |\t]", ""); // Space und Tabulator
+            selecedRow.SetField("Text", text);
+            selecedRow.SetField("Char", text.Length);
+            selecedRow.SetField("Word", text.Split(separatorArray, StringSplitOptions.RemoveEmptyEntries).Length); // "Word(s)"
+            AcceptChanges(selectedIndex);
+
+        }
+
         private void RemoveLineBreaksToolStripMenuItem_Click(object sender, EventArgs e)
         {
             string text = Regex.Replace(Regex.Replace(selectedString, @"\t|\r\n?|\n", " "), @"[ ]{2,}", " ").Trim();
             selecedRow.SetField("Text", text);
             selecedRow.SetField("Char", text.Length);
-            selecedRow.SetField("Word", text.Split(new char[] { ' ', '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries).Length); // "Word(s)"
+            selecedRow.SetField("Word", text.Split(separatorArray, StringSplitOptions.RemoveEmptyEntries).Length); // "Word(s)"
+            AcceptChanges(selectedIndex);
+        }
+
+        private void RemoveAllWhiteSpaceToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            string text = new(selectedString.Where(c => !char.IsWhiteSpace(c)).ToArray());
+            selecedRow.SetField("Text", text);
+            selecedRow.SetField("Char", text.Length);
+            selecedRow.SetField("Word", text.Split(separatorArray, StringSplitOptions.RemoveEmptyEntries).Length); // "Word(s)"
             AcceptChanges(selectedIndex);
         }
 
@@ -1591,7 +1666,13 @@ namespace ClipMenu
             { //Mnemonic: Control Panel -> Ease of Access -> Change how your keyboard works -> Underline keyboard shortcuts and access keys.
                 GetSelectedRowText();
                 calcToolStripMenuItem.Visible = tsSeparatorCalc.Visible = selectedString.Any(char.IsDigit);
+                linkToolStripMenuItem.Visible = linkToolStripSeparator.Visible = new Regex(@"^((http|https)://|www\.)\S+$").IsMatch(selectedString);
             }
+        }
+
+        private void CheckBoxCopyNoBreak_CheckedChanged(object sender, EventArgs e)
+        {
+            if (checkBoxCopyNoBreak.Focused) { copyNoBreak = checkBoxCopyNoBreak.Checked; }
         }
 
         private void CheckBoxPlainText_CheckedChanged(object sender, EventArgs e)
@@ -1649,6 +1730,16 @@ namespace ClipMenu
             try
             {
                 ProcessStartInfo psi = new("https://translate.google.com/translate_t?hl=de&sl=de&tl=en&q=" + Regex.Replace(Regex.Replace(selectedString, "\r?\n", ""), @"(^\s+|\s+$)", "$1")) { UseShellExecute = true };
+                Process.Start(psi);
+            }
+            catch (Exception ex) when (ex is Win32Exception || ex is InvalidOperationException) { Utilities.ErrorMsgTaskDlg(Handle, ex.Message); }
+        }
+
+        private void LinkToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                ProcessStartInfo psi = new(Regex.Replace(Regex.Replace(selectedString, "\r?\n", ""), @"(^\s+|\s+$)", "$1")) { UseShellExecute = true };
                 Process.Start(psi);
             }
             catch (Exception ex) when (ex is Win32Exception || ex is InvalidOperationException) { Utilities.ErrorMsgTaskDlg(Handle, ex.Message); }

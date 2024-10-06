@@ -48,8 +48,8 @@ namespace ClipMenu
                 "Das Suchfeld wird automatisch aktiviert, wenn getippt wird." + Environment.NewLine + Environment.NewLine +
                 "Datenübernahme:" + Environment.NewLine +
                 "¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯" + Environment.NewLine +
-                "Drücken Sie die Enter-Taste oder führen Sie einen Doppelklick aus." + Environment.NewLine +
-                "Die ersten Einträge können mit <Strg+'Nr'> ausgewählt werden.";
+                "Drücken Sie die Enter oder führen Sie einen Doppelklick aus." + Environment.NewLine +
+                "Die ersten Einträge können mit Strg+Zahl selektiert werden.";
             TaskDialog.ShowDialog(hwnd, new TaskDialogPage() { Caption = Application.ProductName + " - Hilfe", Text = msg, Icon = new TaskDialogIcon(icon), AllowCancel = true, Buttons = { TaskDialogButton.OK }, Footnote = foot });
         }
 
@@ -186,7 +186,7 @@ namespace ClipMenu
             {
                 if (string.IsNullOrEmpty(treeNode.Name)) { continue; }
                 XElement element = new(treeNode.Name);
-                if (treeNode.Parent != null) { element.Value = treeNode.Text + treeNode.ToolTipText; } // funktioniert wenn nur Symbols TooltipText haben
+                if (treeNode.Parent != null) { element.Value = treeNode.Text + (string.IsNullOrEmpty(treeNode.ToolTipText) ? "" : "|" + treeNode.ToolTipText); } 
                 else { element.Add(CreateXmlElementList(treeNode.Nodes)); } // d.h. Funktion wird ein zweites Mal durchlaufen 
                 elements.Add(element);
             }

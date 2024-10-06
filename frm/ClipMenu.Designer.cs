@@ -49,6 +49,7 @@
             firstLetterUpperToolStripMenuItem = new ToolStripMenuItem();
             lowerCaseLettersToolStripMenuItem = new ToolStripMenuItem();
             upperCaseToolStripMenuItem = new ToolStripMenuItem();
+            removeSpacesToolStripMenuItem = new ToolStripMenuItem();
             removeLineBreaksToolStripMenuItem = new ToolStripMenuItem();
             tsSeparatorCalc = new ToolStripSeparator();
             calcToolStripMenuItem = new ToolStripMenuItem();
@@ -57,6 +58,8 @@
             wikipediaToolStripMenuItem = new ToolStripMenuItem();
             translatorToolStripMenuItem = new ToolStripMenuItem();
             übersetzerToolStripMenuItem = new ToolStripMenuItem();
+            linkToolStripSeparator = new ToolStripSeparator();
+            linkToolStripMenuItem = new ToolStripMenuItem();
             toolStripSeparator5 = new ToolStripSeparator();
             sendToolStripMenuItem = new ToolStripMenuItem();
             file2TxtStripMenuItem = new ToolStripMenuItem();
@@ -99,6 +102,7 @@
             cbxAcousticResponse = new CheckBox();
             cbxVisualResponse = new CheckBox();
             groupBox = new GroupBox();
+            checkBoxCopyNoBreak = new CheckBox();
             checkBoxMenuKey = new CheckBox();
             checkBoxPlainText = new CheckBox();
             checkBoxXButton = new CheckBox();
@@ -127,6 +131,7 @@
             toolStripStatusLabel = new ToolStripStatusLabel();
             toolTip = new ToolTip(components);
             timer = new System.Windows.Forms.Timer(components);
+            removeAllWhiteSpaceToolStripMenuItem = new ToolStripMenuItem();
             contextMenuStrip.SuspendLayout();
             clipMenuStrip.SuspendLayout();
             tabControl.SuspendLayout();
@@ -184,10 +189,9 @@
             // clipMenuStrip
             // 
             clipMenuStrip.Font = new Font("Segoe UI", 10F);
-            clipMenuStrip.Items.AddRange(new ToolStripItem[] { firstLetterUpperToolStripMenuItem, lowerCaseLettersToolStripMenuItem, upperCaseToolStripMenuItem, removeLineBreaksToolStripMenuItem, tsSeparatorCalc, calcToolStripMenuItem, toolStripSeparator11, googleToolStripMenuItem, wikipediaToolStripMenuItem, translatorToolStripMenuItem, übersetzerToolStripMenuItem });
+            clipMenuStrip.Items.AddRange(new ToolStripItem[] { firstLetterUpperToolStripMenuItem, lowerCaseLettersToolStripMenuItem, upperCaseToolStripMenuItem, removeSpacesToolStripMenuItem, removeLineBreaksToolStripMenuItem, removeAllWhiteSpaceToolStripMenuItem, tsSeparatorCalc, calcToolStripMenuItem, toolStripSeparator11, googleToolStripMenuItem, wikipediaToolStripMenuItem, translatorToolStripMenuItem, übersetzerToolStripMenuItem, linkToolStripSeparator, linkToolStripMenuItem });
             clipMenuStrip.Name = "clipMenuStrip";
-            clipMenuStrip.OwnerItem = tsConvertSubMenu;
-            clipMenuStrip.Size = new Size(240, 232);
+            clipMenuStrip.Size = new Size(240, 332);
             clipMenuStrip.Opening += ClipMenuStrip_Opening;
             // 
             // firstLetterUpperToolStripMenuItem
@@ -217,6 +221,14 @@
             upperCaseToolStripMenuItem.Size = new Size(239, 24);
             upperCaseToolStripMenuItem.Text = "GRO&SSBUCHSTABEN";
             upperCaseToolStripMenuItem.Click += UpperCaseToolStripMenuItem_Click;
+            // 
+            // removeSpacesToolStripMenuItem
+            // 
+            removeSpacesToolStripMenuItem.Image = Properties.Resources.String_16x;
+            removeSpacesToolStripMenuItem.Name = "removeSpacesToolStripMenuItem";
+            removeSpacesToolStripMenuItem.Size = new Size(239, 24);
+            removeSpacesToolStripMenuItem.Text = "&Leerzeichen entfernen";
+            removeSpacesToolStripMenuItem.Click += RemoveSpacesToolStripMenuItem_Click;
             // 
             // removeLineBreaksToolStripMenuItem
             // 
@@ -275,6 +287,19 @@
             übersetzerToolStripMenuItem.Size = new Size(239, 24);
             übersetzerToolStripMenuItem.Text = "&Übersetzer (dt. → engl.)";
             übersetzerToolStripMenuItem.Click += ÜbersetzerToolStripMenuItem_Click;
+            // 
+            // linkToolStripSeparator
+            // 
+            linkToolStripSeparator.Name = "linkToolStripSeparator";
+            linkToolStripSeparator.Size = new Size(236, 6);
+            // 
+            // linkToolStripMenuItem
+            // 
+            linkToolStripMenuItem.Image = Properties.Resources.WebInsertHyperlinkHS;
+            linkToolStripMenuItem.Name = "linkToolStripMenuItem";
+            linkToolStripMenuItem.Size = new Size(239, 24);
+            linkToolStripMenuItem.Text = "&Hyperlink öffnen";
+            linkToolStripMenuItem.Click += LinkToolStripMenuItem_Click;
             // 
             // toolStripSeparator5
             // 
@@ -659,7 +684,7 @@
             gbxClipboardChange.Controls.Add(cbxAcousticResponse);
             gbxClipboardChange.Controls.Add(cbxVisualResponse);
             gbxClipboardChange.Font = new Font("Segoe UI", 9F);
-            gbxClipboardChange.Location = new Point(8, 266);
+            gbxClipboardChange.Location = new Point(8, 248);
             gbxClipboardChange.Name = "gbxClipboardChange";
             gbxClipboardChange.Size = new Size(306, 47);
             gbxClipboardChange.TabIndex = 14;
@@ -670,7 +695,7 @@
             // 
             cbxAcousticResponse.AutoSize = true;
             cbxAcousticResponse.Font = new Font("Segoe UI", 10F);
-            cbxAcousticResponse.Location = new Point(123, 18);
+            cbxAcousticResponse.Location = new Point(123, 20);
             cbxAcousticResponse.Name = "cbxAcousticResponse";
             cbxAcousticResponse.Size = new Size(84, 23);
             cbxAcousticResponse.TabIndex = 1;
@@ -682,7 +707,7 @@
             // 
             cbxVisualResponse.AutoSize = true;
             cbxVisualResponse.Font = new Font("Segoe UI", 10F);
-            cbxVisualResponse.Location = new Point(13, 18);
+            cbxVisualResponse.Location = new Point(13, 20);
             cbxVisualResponse.Name = "cbxVisualResponse";
             cbxVisualResponse.Size = new Size(65, 23);
             cbxVisualResponse.TabIndex = 0;
@@ -692,23 +717,36 @@
             // 
             // groupBox
             // 
+            groupBox.Controls.Add(checkBoxCopyNoBreak);
             groupBox.Controls.Add(checkBoxMenuKey);
             groupBox.Controls.Add(checkBoxPlainText);
             groupBox.Controls.Add(checkBoxXButton);
             groupBox.Controls.Add(checkBoxRWin);
             groupBox.Font = new Font("Segoe UI", 9F);
-            groupBox.Location = new Point(8, 323);
+            groupBox.Location = new Point(8, 301);
             groupBox.Name = "groupBox";
-            groupBox.Size = new Size(306, 136);
+            groupBox.Size = new Size(306, 158);
             groupBox.TabIndex = 13;
             groupBox.TabStop = false;
             groupBox.Text = "Zusätzliche Funktionen (Änderung nach Neustart)";
+            // 
+            // checkBoxCopyNoBreak
+            // 
+            checkBoxCopyNoBreak.AutoSize = true;
+            checkBoxCopyNoBreak.Font = new Font("Segoe UI", 10F);
+            checkBoxCopyNoBreak.Location = new Point(13, 20);
+            checkBoxCopyNoBreak.Name = "checkBoxCopyNoBreak";
+            checkBoxCopyNoBreak.Size = new Size(277, 23);
+            checkBoxCopyNoBreak.TabIndex = 4;
+            checkBoxCopyNoBreak.Text = "Strg+Shift+C: Zeilenumbrüche entfernen";
+            checkBoxCopyNoBreak.UseVisualStyleBackColor = true;
+            checkBoxCopyNoBreak.CheckedChanged += CheckBoxCopyNoBreak_CheckedChanged;
             // 
             // checkBoxMenuKey
             // 
             checkBoxMenuKey.AutoSize = true;
             checkBoxMenuKey.Font = new Font("Segoe UI", 10F);
-            checkBoxMenuKey.Location = new Point(13, 105);
+            checkBoxMenuKey.Location = new Point(13, 130);
             checkBoxMenuKey.Name = "checkBoxMenuKey";
             checkBoxMenuKey.Size = new Size(246, 23);
             checkBoxMenuKey.TabIndex = 3;
@@ -720,7 +758,7 @@
             // 
             checkBoxPlainText.AutoSize = true;
             checkBoxPlainText.Font = new Font("Segoe UI", 10F);
-            checkBoxPlainText.Location = new Point(13, 22);
+            checkBoxPlainText.Location = new Point(13, 47);
             checkBoxPlainText.Name = "checkBoxPlainText";
             checkBoxPlainText.Size = new Size(278, 23);
             checkBoxPlainText.TabIndex = 2;
@@ -732,7 +770,7 @@
             // 
             checkBoxXButton.AutoSize = true;
             checkBoxXButton.Font = new Font("Segoe UI", 10F);
-            checkBoxXButton.Location = new Point(13, 49);
+            checkBoxXButton.Location = new Point(13, 74);
             checkBoxXButton.Name = "checkBoxXButton";
             checkBoxXButton.Size = new Size(266, 23);
             checkBoxXButton.TabIndex = 1;
@@ -744,7 +782,7 @@
             // 
             checkBoxRWin.AutoSize = true;
             checkBoxRWin.Font = new Font("Segoe UI", 10F);
-            checkBoxRWin.Location = new Point(13, 76);
+            checkBoxRWin.Location = new Point(13, 101);
             checkBoxRWin.Name = "checkBoxRWin";
             checkBoxRWin.Size = new Size(264, 23);
             checkBoxRWin.TabIndex = 0;
@@ -755,7 +793,7 @@
             // lblMaxComment
             // 
             lblMaxComment.Font = new Font("Segoe UI", 9F);
-            lblMaxComment.Location = new Point(13, 115);
+            lblMaxComment.Location = new Point(13, 97);
             lblMaxComment.Name = "lblMaxComment";
             lblMaxComment.Size = new Size(301, 38);
             lblMaxComment.TabIndex = 12;
@@ -764,7 +802,7 @@
             // lblPasswords
             // 
             lblPasswords.Font = new Font("Segoe UI", 9F);
-            lblPasswords.Location = new Point(13, 179);
+            lblPasswords.Location = new Point(13, 161);
             lblPasswords.Name = "lblPasswords";
             lblPasswords.Size = new Size(301, 82);
             lblPasswords.TabIndex = 11;
@@ -775,15 +813,15 @@
             lblAutostart.Font = new Font("Segoe UI", 9F);
             lblAutostart.Location = new Point(13, 32);
             lblAutostart.Name = "lblAutostart";
-            lblAutostart.Size = new Size(301, 50);
+            lblAutostart.Size = new Size(301, 37);
             lblAutostart.TabIndex = 10;
-            lblAutostart.Text = "Das Programm benötigt Administratorrechte, um Ein-\r\nträge in anderen Anwendungen einfügen zu können.\r\nDeshalb erfolgt der Autostart mit höchsten Privilegien.";
+            lblAutostart.Text = "Das Programm benötigt Administratorrechte, um Ein-\r\nträge in anderen Anwendungen einfügen zu können.";
             // 
             // ckbRegex
             // 
             ckbRegex.AutoSize = true;
             ckbRegex.Font = new Font("Segoe UI", 10F);
-            ckbRegex.Location = new Point(8, 157);
+            ckbRegex.Location = new Point(8, 139);
             ckbRegex.Name = "ckbRegex";
             ckbRegex.Size = new Size(269, 23);
             ckbRegex.TabIndex = 9;
@@ -808,7 +846,7 @@
             // 
             lblMaxItems.AutoSize = true;
             lblMaxItems.Font = new Font("Segoe UI", 10F);
-            lblMaxItems.Location = new Point(5, 90);
+            lblMaxItems.Location = new Point(5, 72);
             lblMaxItems.Name = "lblMaxItems";
             lblMaxItems.Size = new Size(220, 19);
             lblMaxItems.TabIndex = 3;
@@ -820,7 +858,7 @@
             cbxMaxItems.Font = new Font("Segoe UI", 10F);
             cbxMaxItems.FormattingEnabled = true;
             cbxMaxItems.Items.AddRange(new object[] { "10", "20", "30", "40", "50", "60", "70", "80", "90", "100" });
-            cbxMaxItems.Location = new Point(234, 87);
+            cbxMaxItems.Location = new Point(234, 69);
             cbxMaxItems.MaxLength = 2;
             cbxMaxItems.Name = "cbxMaxItems";
             cbxMaxItems.Size = new Size(60, 25);
@@ -959,6 +997,14 @@
             timer.Interval = 200;
             timer.Tick += Timer_Tick;
             // 
+            // removeAllWhiteSpaceToolStripMenuItem
+            // 
+            removeAllWhiteSpaceToolStripMenuItem.Image = Properties.Resources.StatusBlockedOutline_16x;
+            removeAllWhiteSpaceToolStripMenuItem.Name = "removeAllWhiteSpaceToolStripMenuItem";
+            removeAllWhiteSpaceToolStripMenuItem.Size = new Size(239, 24);
+            removeAllWhiteSpaceToolStripMenuItem.Text = "&All Whitespace entfernen";
+            removeAllWhiteSpaceToolStripMenuItem.Click += RemoveAllWhiteSpaceToolStripMenuItem_Click;
+            // 
             // FrmClipMenu
             // 
             AutoScaleDimensions = new SizeF(7F, 17F);
@@ -1095,5 +1141,10 @@
         private CheckBox cbxAcousticResponse;
         private CheckBox checkBoxMenuKey;
         private ToolStripMenuItem file2TxtStripMenuItem;
+        private ToolStripSeparator linkToolStripSeparator;
+        private ToolStripMenuItem linkToolStripMenuItem;
+        private CheckBox checkBoxCopyNoBreak;
+        private ToolStripMenuItem removeSpacesToolStripMenuItem;
+        private ToolStripMenuItem removeAllWhiteSpaceToolStripMenuItem;
     }
 }
