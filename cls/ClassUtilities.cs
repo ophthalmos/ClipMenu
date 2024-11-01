@@ -35,7 +35,7 @@ namespace ClipMenu
 
         internal static void HelpMsgTaskDlg(IntPtr hwnd, Icon icon)
         {
-            string foot = "              © " + GetBuildDate().ToString("yyyy") + " Wilhelm Happe, Version " + Assembly.GetExecutingAssembly().GetName().Version.ToString();
+            string foot = "              © 2023-" + GetBuildDate().ToString("yyyy") + " Wilhelm Happe, Version " + Assembly.GetExecutingAssembly().GetName().Version.ToString() + " (" + GetBuildDate().ToString("d") + ")";
             string msg = "Tastenkombinationen:" + Environment.NewLine +
                 "¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯" + Environment.NewLine +
                 "Strg+Win+V:        Anzeigen des Programmfensters" + Environment.NewLine +

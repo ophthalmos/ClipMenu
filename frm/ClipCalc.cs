@@ -27,6 +27,8 @@ namespace ClipMenu
             NativeMethods.SendMessage(tbDisplay.Handle, NativeMethods.EM_SETMARGINS, NativeMethods.EC_LEFTMARGIN, 65536 + 3);
         }
 
+        private void FrmClipCalc_Shown(object sender, EventArgs e) { Activate(); }
+
         private void BtnStd0_Click(object sender, EventArgs e) { AddToDisplay("0"); }
         private void BtnStd1_Click(object sender, EventArgs e) { AddToDisplay("1"); }
         private void BtnStd2_Click(object sender, EventArgs e) { AddToDisplay("2"); }
@@ -261,5 +263,6 @@ namespace ClipMenu
             NativeMethods.PostMessage(Application.OpenForms[0].Handle, NativeMethods.WM_CLIPCALC_MSG, 0, 0); // dontHide false;
             if (!Modal) { NativeMethods.PostMessage(Application.OpenForms[0].Handle, NativeMethods.WM_USER, trackBar.Value, 0); }
         }
+
     }
 }

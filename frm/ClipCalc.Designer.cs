@@ -458,6 +458,7 @@
             HelpButtonClicked += Calculator_HelpButtonClicked;
             FormClosing += FrmClipCalc_FormClosing;
             Load += Calculator_Load;
+            Shown += FrmClipCalc_Shown;
             HelpRequested += Calculator_HelpRequested;
             pnlDisplayBkgr.ResumeLayout(false);
             pnlDisplayBkgr.PerformLayout();
