@@ -1,5 +1,5 @@
 #define MyAppName "ClipMenu"
-#define MyAppVersion "1.0.0.9"
+#define MyAppVersion "1.0.1.0"
 
 [Setup]
 AppName={#MyAppName}

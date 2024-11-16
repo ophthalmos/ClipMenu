@@ -198,7 +198,7 @@ namespace ClipMenu
             bool result = false;
             if (node.Nodes.Count == 0)
             {
-                if (node.Text.Contains(texto, StringComparison.CurrentCultureIgnoreCase)) { result = true; }
+                if (node.Text.Contains(texto, StringComparison.CurrentCultureIgnoreCase) || node.ToolTipText.Contains(texto, StringComparison.InvariantCultureIgnoreCase)) { result = true; }
                 else { node.Remove(); }
             }
             else

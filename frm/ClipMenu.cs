@@ -101,157 +101,167 @@ namespace ClipMenu
 
             if (File.Exists(xmlPath))
             {
-                treeView.Nodes.Clear();
-                XDocument xDocument = XDocument.Load(xmlPath);
-                if (xDocument == null || xDocument.Root == null) { File.Delete(xmlPath); }
-                foreach (XElement element in xDocument.Root.Descendants("Configuration"))
+                try
                 {
-                    if (element.Element("MaxItems") != null)
+                    treeView.Nodes.Clear();
+                    XDocument xDocument = XDocument.Load(xmlPath);
+                    if (xDocument == null || xDocument.Root == null) { File.Delete(xmlPath); }
+                    foreach (XElement element in xDocument.Root.Descendants("Configuration"))
                     {
-                        maxItems = int.TryParse(element.Element("MaxItems").Value, out int max) ? max : maxItems;
-                        cbxMaxItems.SelectedIndex = cbxMaxItems.FindString(maxItems.ToString());
-                    }
-                    if (element.Element("DecimalPlaces") != null)
-                    {
-                        decimalPlaces = int.TryParse(element.Element("DecimalPlaces").Value, out int dec) ? dec : decimalPlaces;
-                    }
-
-                    if (element.Element("PasswdExcld") != null)
-                    {
-                        ckbRegex.Checked = passwdExcld = bool.TryParse(element.Element("PasswdExcld").Value, out passwdExcld) && passwdExcld;
-                    }
-
-                    if (element.Element("CopyNoBreak") != null)
-                    {
-                        checkBoxCopyNoBreak.Checked = copyNoBreak = bool.TryParse(element.Element("CopyNoBreak").Value, out copyNoBreak) && copyNoBreak;
-                    }
-
-                    if (element.Element("PasteAsPlain") != null)
-                    {
-                        checkBoxPlainText.Checked = plainText = bool.TryParse(element.Element("PasteAsPlain").Value, out plainText) && plainText;
-                    }
-
-                    if (element.Element("VisualResponse") != null)
-                    {
-                        cbxVisualResponse.Checked = visualResponse = bool.TryParse(element.Element("VisualResponse").Value, out visualResponse) && visualResponse;
-                    }
-
-                    if (element.Element("AcousticResponse") != null)
-                    {
-                        cbxAcousticResponse.Checked = acousticResponse = bool.TryParse(element.Element("AcousticResponse").Value, out acousticResponse) && acousticResponse;
-                    }
-
-                    if (element.Element("AltTabRWin") != null)
-                    {
-                        checkBoxRWin.Checked = altTabRWin = bool.TryParse(element.Element("AltTabRWin").Value, out altTabRWin) && altTabRWin;
-                    }
-
-                    if (element.Element("AltTabApps") != null)
-                    {
-                        checkBoxMenuKey.Checked = altTabApps = bool.TryParse(element.Element("AltTabApps").Value, out altTabApps) && altTabApps;
-                    }
-
-                    if (element.Element("AltTabXBtn") != null)
-                    {
-                        checkBoxXButton.Checked = altTabXBtn = bool.TryParse(element.Element("AltTabXBtn").Value, out altTabXBtn) && altTabXBtn;
-                    }
-
-                    if (element.Element("DatesExpanded") != null)
-                    {
-                        datesExpanded = bool.TryParse(element.Element("DatesExpanded").Value, out datesExpanded) && datesExpanded;
-                    }
-
-                    if (element.Element("SnippetsExpanded") != null)
-                    {
-                        snippetsExpanded = bool.TryParse(element.Element("SnippetsExpanded").Value, out snippetsExpanded) && snippetsExpanded;
-                    }
-
-                    if (element.Element("SymbolsExpanded") != null)
-                    {
-                        symbolsExpanded = bool.TryParse(element.Element("SymbolsExpanded").Value, out symbolsExpanded) && symbolsExpanded;
-                    }
-
-                    if (element.Element("FormSize") != null && new Regex(@"^\d+,\d+$").Match(element.Element("FormSize").Value).Success)
-                    {
-                        string[] coords = element.Element("FormSize").Value.Split(',');
-                        Size = new Size(int.Parse(coords[0]), int.Parse(coords[1]));
-                    }
-                    if (element.Element("ImagePath") != null)
-                    {
-                        imagePath = element.Element("ImagePath").Value;
-                    }
-                }
-                foreach (XElement element in xDocument.Root.Descendants("Dates"))
-                {
-                    TreeNode node = new() { Name = element.Name.ToString(), Text = "Daten", ToolTipText = "Strg+D" };
-                    treeView.Nodes.Add(node);
-                    foreach (XElement childElement in element.Elements())
-                    {
-                        TreeNode childNode = new() { Name = childElement.Name.ToString(), Text = childElement.Value };
-                        node.Nodes.Add(childNode);
-                    }
-                }
-                if (!treeView.Nodes.ContainsKey("Dates")) { treeView.Nodes.Add(new TreeNode() { Name = "Dates", Text = "Daten", ToolTipText = "Strg+D" }); }
-
-                foreach (XElement element in xDocument.Root.Descendants("Snippets"))
-                {
-                    TreeNode node = new() { Name = element.Name.ToString(), Text = "Texte", ToolTipText = "Strg+T" };
-                    treeView.Nodes.Add(node);
-                    foreach (XElement childElement in element.Elements())
-                    {
-                        TreeNode childNode;
-                        if (childElement.Value.Contains('|'))
+                        if (element.Element("MaxItems") != null)
                         {
-                            int index = childElement.Value.IndexOf('|');
-                            childNode = new() { Name = childElement.Name.ToString(), Text = childElement.Value[..index], ToolTipText = childElement.Value[(index + 1)..] };
+                            maxItems = int.TryParse(element.Element("MaxItems").Value, out int max) ? max : maxItems;
+                            cbxMaxItems.SelectedIndex = cbxMaxItems.FindString(maxItems.ToString());
                         }
-                        else
+                        if (element.Element("DecimalPlaces") != null)
                         {
-                            childNode = new() { Name = childElement.Name.ToString(), Text = childElement.Value, };
+                            decimalPlaces = int.TryParse(element.Element("DecimalPlaces").Value, out int dec) ? dec : decimalPlaces;
                         }
 
-                        node.Nodes.Add(childNode);
-                    }
-                }
-                if (!treeView.Nodes.ContainsKey("Snippets")) { treeView.Nodes.Add(new TreeNode() { Name = "Snippets", Text = "Texte", ToolTipText = "Strg+T" }); }
-
-                foreach (XElement element in xDocument.Root.Descendants("Symbols"))
-                {
-                    TreeNode node = new() { Name = element.Name.ToString(), Text = "Zeichen", ToolTipText = "Strg+Z" };
-                    treeView.Nodes.Add(node);
-                    foreach (XElement childElement in element.Elements())
-                    {
-                        TreeNode childNode = new()
+                        if (element.Element("PasswdExcld") != null)
                         {
-                            Name = childElement.Name.ToString(),
-                            Text = childElement.Value[..1],
-                            ToolTipText = childElement.Value.Length > 1 ? childElement.Value[1..] : ""
-                        };
-                        node.Nodes.Add(childNode);
+                            ckbRegex.Checked = passwdExcld = bool.TryParse(element.Element("PasswdExcld").Value, out passwdExcld) && passwdExcld;
+                        }
+
+                        if (element.Element("CopyNoBreak") != null)
+                        {
+                            checkBoxCopyNoBreak.Checked = copyNoBreak = bool.TryParse(element.Element("CopyNoBreak").Value, out copyNoBreak) && copyNoBreak;
+                        }
+
+                        if (element.Element("PasteAsPlain") != null)
+                        {
+                            checkBoxPlainText.Checked = plainText = bool.TryParse(element.Element("PasteAsPlain").Value, out plainText) && plainText;
+                        }
+
+                        if (element.Element("VisualResponse") != null)
+                        {
+                            cbxVisualResponse.Checked = visualResponse = bool.TryParse(element.Element("VisualResponse").Value, out visualResponse) && visualResponse;
+                        }
+
+                        if (element.Element("AcousticResponse") != null)
+                        {
+                            cbxAcousticResponse.Checked = acousticResponse = bool.TryParse(element.Element("AcousticResponse").Value, out acousticResponse) && acousticResponse;
+                        }
+
+                        if (element.Element("AltTabRWin") != null)
+                        {
+                            checkBoxRWin.Checked = altTabRWin = bool.TryParse(element.Element("AltTabRWin").Value, out altTabRWin) && altTabRWin;
+                        }
+
+                        if (element.Element("AltTabApps") != null)
+                        {
+                            checkBoxMenuKey.Checked = altTabApps = bool.TryParse(element.Element("AltTabApps").Value, out altTabApps) && altTabApps;
+                        }
+
+                        if (element.Element("AltTabXBtn") != null)
+                        {
+                            checkBoxXButton.Checked = altTabXBtn = bool.TryParse(element.Element("AltTabXBtn").Value, out altTabXBtn) && altTabXBtn;
+                        }
+
+                        if (element.Element("DatesExpanded") != null)
+                        {
+                            datesExpanded = bool.TryParse(element.Element("DatesExpanded").Value, out datesExpanded) && datesExpanded;
+                        }
+
+                        if (element.Element("SnippetsExpanded") != null)
+                        {
+                            snippetsExpanded = bool.TryParse(element.Element("SnippetsExpanded").Value, out snippetsExpanded) && snippetsExpanded;
+                        }
+
+                        if (element.Element("SymbolsExpanded") != null)
+                        {
+                            symbolsExpanded = bool.TryParse(element.Element("SymbolsExpanded").Value, out symbolsExpanded) && symbolsExpanded;
+                        }
+
+                        if (element.Element("FormSize") != null && new Regex(@"^\d+,\d+$").Match(element.Element("FormSize").Value).Success)
+                        {
+                            string[] coords = element.Element("FormSize").Value.Split(',');
+                            Size = new Size(int.Parse(coords[0]), int.Parse(coords[1]));
+                        }
+                        if (element.Element("ImagePath") != null)
+                        {
+                            imagePath = element.Element("ImagePath").Value;
+                        }
                     }
+                    foreach (XElement element in xDocument.Root.Descendants("Dates"))
+                    {
+                        TreeNode node = new() { Name = element.Name.ToString(), Text = "Daten", ToolTipText = "Strg+D" };
+                        treeView.Nodes.Add(node);
+                        foreach (XElement childElement in element.Elements())
+                        {
+                            TreeNode childNode = new() { Name = childElement.Name.ToString(), Text = childElement.Value };
+                            node.Nodes.Add(childNode);
+                        }
+                    }
+                    if (!treeView.Nodes.ContainsKey("Dates")) { treeView.Nodes.Add(new TreeNode() { Name = "Dates", Text = "Daten", ToolTipText = "Strg+D" }); }
+
+                    foreach (XElement element in xDocument.Root.Descendants("Snippets"))
+                    {
+                        TreeNode node = new() { Name = element.Name.ToString(), Text = "Texte", ToolTipText = "Strg+T" };
+                        treeView.Nodes.Add(node);
+                        foreach (XElement childElement in element.Elements())
+                        {
+                            TreeNode childNode;
+                            if (childElement.Value.Contains('|'))
+                            {
+                                int index = childElement.Value.IndexOf('|');
+                                childNode = new() { Name = childElement.Name.ToString(), Text = childElement.Value[..index], ToolTipText = childElement.Value.Length > index + 1 ? childElement.Value[(index + 2)..] : "" };
+                            }
+                            else
+                            {
+                                childNode = new() { Name = childElement.Name.ToString(), Text = childElement.Value, };
+                            }
+
+                            node.Nodes.Add(childNode);
+                        }
+                    }
+                    if (!treeView.Nodes.ContainsKey("Snippets")) { treeView.Nodes.Add(new TreeNode() { Name = "Snippets", Text = "Texte", ToolTipText = "Strg+T" }); }
+
+                    foreach (XElement element in xDocument.Root.Descendants("Symbols"))
+                    {
+                        TreeNode node = new() { Name = element.Name.ToString(), Text = "Zeichen", ToolTipText = "Strg+Z" };
+                        treeView.Nodes.Add(node);
+                        foreach (XElement childElement in element.Elements())
+                        {
+                            TreeNode childNode = new()
+                            {
+                                Name = childElement.Name.ToString(),
+                                Text = childElement.Value[..1],
+                                ToolTipText = childElement.Value.Length > 1 ? childElement.Value[2..] : "" // 2 wegen vorgestelltem '|'
+                            };
+                            node.Nodes.Add(childNode);
+                        }
+                    }
+                    if (!treeView.Nodes.ContainsKey("Symbols")) { treeView.Nodes.Add(new TreeNode() { Name = "Symbols", Text = "Zeichen", ToolTipText = "Strg+Z" }); }
+
+                    if (datesExpanded) { treeView.Nodes[0].Expand(); } else { treeView.Nodes[0].Collapse(); }
+                    if (snippetsExpanded) { treeView.Nodes[1].Expand(); } else { treeView.Nodes[1].Collapse(); }
+                    if (symbolsExpanded) { treeView.Nodes[2].Expand(); } else { treeView.Nodes[2].Collapse(); }
+
+                    foreach (XElement xElement in xDocument.Root.Descendants("Clips"))
+                    {
+                        DataRow row = dataTable.NewRow();
+                        if (xElement.Element("Time") != null) { row["Time"] = xElement.Element("Time").Value; }
+                        if (xElement.Element("Type") != null) { row["Type"] = xElement.Element("Type").Value; }
+                        if (xElement.Element("Text") != null) { row["Text"] = Utilities.Truncate(xElement.Element("Text").Value, maxTextLength, string.Empty); }
+                        if (xElement.Element("Char") != null) { row["Char"] = xElement.Element("Char").Value; }
+                        if (xElement.Element("Word") != null) { row["Word"] = xElement.Element("Word").Value; }
+                        dataTable.Rows.Add(row);
+                    }
+                    dataTable.AcceptChanges();
+                    lboxTable = Utilities.DataTable2LBoxDataTable(dataTable, maxDisplayChars);
+                    listBox.BeginUpdate();
+                    foreach (DataRow row in lboxTable.Rows) { listBox.Items.Add(row); }
+                    listBox.EndUpdate();
+                    if (listBox.Items.Count > 0) { btnDeleteAll.Enabled = true; }
                 }
-                if (!treeView.Nodes.ContainsKey("Symbols")) { treeView.Nodes.Add(new TreeNode() { Name = "Symbols", Text = "Zeichen", ToolTipText = "Strg+Z" }); }
-
-                if (datesExpanded) { treeView.Nodes[0].Expand(); } else { treeView.Nodes[0].Collapse(); }
-                if (snippetsExpanded) { treeView.Nodes[1].Expand(); } else { treeView.Nodes[1].Collapse(); }
-                if (symbolsExpanded) { treeView.Nodes[2].Expand(); } else { treeView.Nodes[2].Collapse(); }
-
-                foreach (XElement xElement in xDocument.Root.Descendants("Clips"))
+                catch (XmlException ex) // Unexpected end of file has occurred. The following elements are not closed: Symbol0, Symbols, Clipmenu. Line 33, Position 14.
                 {
-                    DataRow row = dataTable.NewRow();
-                    if (xElement.Element("Time") != null) { row["Time"] = xElement.Element("Time").Value; }
-                    if (xElement.Element("Type") != null) { row["Type"] = xElement.Element("Type").Value; }
-                    if (xElement.Element("Text") != null) { row["Text"] = Utilities.Truncate(xElement.Element("Text").Value, maxTextLength, string.Empty); }
-                    if (xElement.Element("Char") != null) { row["Char"] = xElement.Element("Char").Value; }
-                    if (xElement.Element("Word") != null) { row["Word"] = xElement.Element("Word").Value; }
-                    dataTable.Rows.Add(row);
+                    File.Delete(xmlPath);
+                    Utilities.ErrorMsgTaskDlg(Handle, ex.Message + "\nDas Programm wird neu gestartet.");
+                    ExitApplicationJob();
+                    Application.Restart();
                 }
-                dataTable.AcceptChanges();
-                lboxTable = Utilities.DataTable2LBoxDataTable(dataTable, maxDisplayChars);
-                listBox.BeginUpdate();
-                foreach (DataRow row in lboxTable.Rows) { listBox.Items.Add(row); }
-                listBox.EndUpdate();
-                if (listBox.Items.Count > 0) { btnDeleteAll.Enabled = true; }
             }
             else { Directory.CreateDirectory(Path.GetDirectoryName(xmlPath)); } // If the folder exists already, the line will be ignored.
 
@@ -364,6 +374,7 @@ namespace ClipMenu
                 xPos = xPos < 0 ? 0 : xPos + Width > screen.Width ? screen.Width - Width : xPos;
                 yPos = yPos < 0 ? 0 : yPos + Height > screen.Height ? screen.Height - Height : yPos;
                 Location = new Point(xPos, yPos);
+                TopMost = true; // make our form jump to the top of everything
                 BringToFront();
                 Activate();
                 tabControl.SelectedIndex = 0;
@@ -410,8 +421,8 @@ namespace ClipMenu
             {
                 using StringWriter writer = new();
                 dataTable.WriteXml(writer, XmlWriteMode.IgnoreSchema, false);
-                XDocument xDocument = new(new XElement("ClipMenu", SaveConfiguration()));
-                xDocument.Descendants("ClipMenu").FirstOrDefault().Add(Utilities.CreateXmlElementList(treeView.Nodes));
+                XDocument xDocument = new(new XElement(appName, SaveConfiguration()));
+                xDocument.Descendants(appName).LastOrDefault()?.Add(Utilities.CreateXmlElementList(treeView.Nodes));
                 xDocument.Root.Add(XDocument.Parse(writer.ToString()).Root.Elements()); // Merge to one XDocument
                 xDocument.Save(xmlPath);
             }
@@ -681,14 +692,6 @@ namespace ClipMenu
                 treeViewCache = Utilities.CloneTreeView(treeView);
                 e.Handled = e.SuppressKeyPress = true;
             }
-        }
-
-        private void TreeView_AfterSelect(object sender, TreeViewEventArgs e)
-        {
-            tsButtonNew.Enabled = e.Node.IsSelected;
-            tsButtonDelete.Enabled = removeToolStripMenuItem.Enabled = tsButtonMoveUp.Enabled = tsButtonMoveDn.Enabled = upToolStripMenuItem.Enabled = downToolStripMenuItem.Enabled = e.Node.Parent != null;
-            if (e.Node.Parent != null && e.Node.Parent.Nodes.IndexOf(e.Node) == 0) { upToolStripMenuItem.Enabled = tsButtonMoveUp.Enabled = false; }
-            else if (e.Node.Parent != null && e.Node.Parent.Nodes.IndexOf(e.Node) == e.Node.Parent.Nodes.Count - 1) { downToolStripMenuItem.Enabled = tsButtonMoveDn.Enabled = false; }
         }
 
         private void TreeView_BeforeLabelEdit(object sender, NodeLabelEditEventArgs e)
@@ -1319,10 +1322,6 @@ namespace ClipMenu
             }
         }
 
-        private void TsButtonExpAll_Click(object sender, EventArgs e) { treeView.ExpandAll(); }
-
-        private void TsButtonExpNone_Click(object sender, EventArgs e) { treeView.CollapseAll(); }
-
         private void LinkLabel_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
             try
@@ -1534,14 +1533,15 @@ namespace ClipMenu
             treeView.BeginUpdate();
             treeView.Nodes.Clear();
             foreach (TreeNode node in treeViewCache.Nodes) { treeView.Nodes.Add((TreeNode)node.Clone()); }
+            int nodes = 0;
             if (snippetSearchBox.Text.Length > 0)
             {
                 for (int i = treeView.Nodes.Count; i > 0; i--)
                 {
-                    Utilities.NodeFiltering(treeView.Nodes[i - 1], snippetSearchBox.Text);
+                    if (Utilities.NodeFiltering(treeView.Nodes[i - 1], snippetSearchBox.Text)) { nodes++; }
                 }
+                for (int i = nodes; i > 0; i--) { treeView.Nodes[i - 1].ExpandAll(); }
             }
-            treeView.Nodes[1].ExpandAll();
             treeView.EndUpdate();
         }
 
@@ -1560,16 +1560,59 @@ namespace ClipMenu
             }
         }
 
+        private void TreeView_AfterSelect(object sender, TreeViewEventArgs e)
+        {
+            if (e.Node == null)  // Selektion aufgehoben
+            {
+                Console.Beep();
+                if (Utilities.AllNodesExpanded(treeView)) { tsButtonExpand.Enabled = false; tsButtonCollapse.Enabled = true; }
+                else if (Utilities.NoNodesExpanded(treeView)) { tsButtonCollapse.Enabled = false; tsButtonExpand.Enabled = true; }
+            }
+            else
+            {
+                if (e.Node.IsSelected && (e.Node.IsExpanded || (e.Node.Parent != null && e.Node.Parent.IsExpanded))) { tsButtonExpand.Enabled = false; tsButtonCollapse.Enabled = true; }
+                else if (e.Node.IsSelected && ((e.Node.Parent != null && !e.Node.Parent.IsExpanded) || !e.Node.IsExpanded)) { tsButtonCollapse.Enabled = false; tsButtonExpand.Enabled = true; }
+            }
+            tsButtonNew.Enabled = e.Node.IsSelected;
+            tsButtonDelete.Enabled = removeToolStripMenuItem.Enabled = tsButtonMoveUp.Enabled = tsButtonMoveDn.Enabled = upToolStripMenuItem.Enabled = downToolStripMenuItem.Enabled = e.Node.Parent != null;
+            if (e.Node.Parent != null && e.Node.Parent.Nodes.IndexOf(e.Node) == 0) { upToolStripMenuItem.Enabled = tsButtonMoveUp.Enabled = false; }
+            else if (e.Node.Parent != null && e.Node.Parent.Nodes.IndexOf(e.Node) == e.Node.Parent.Nodes.Count - 1) { downToolStripMenuItem.Enabled = tsButtonMoveDn.Enabled = false; }
+        }
+
         private void TreeView_AfterCollapse(object sender, TreeViewEventArgs e)
         {
-            tsButtonExpNone.Enabled = !Utilities.NoNodesExpanded(treeView);
-            tsButtonExpAll.Enabled = true;
+            tsButtonCollapse.Enabled = !Utilities.NoNodesExpanded(treeView);
+            tsButtonExpand.Enabled = true;
+            //if (treeView.SelectedNode != null) { tsButtonCollapse.Enabled = false; }
         }
 
         private void TreeView_AfterExpand(object sender, TreeViewEventArgs e)
         {
-            tsButtonExpAll.Enabled = !Utilities.AllNodesExpanded(treeView);
-            tsButtonExpNone.Enabled = true;
+            tsButtonExpand.Enabled = !Utilities.AllNodesExpanded(treeView);
+            tsButtonCollapse.Enabled = true;
+            //if (treeView.SelectedNode != null) { tsButtonExpand.Enabled = false; }
+        }
+
+        private void TsButtonExpand_Click(object sender, EventArgs e)
+        {
+            TreeNode selectedNode = treeView.SelectedNode;
+            if (selectedNode != null)
+            {
+                if (selectedNode.Parent != null) { selectedNode.Parent.Expand(); }
+                else { selectedNode.Expand(); }
+            }
+            else { treeView.ExpandAll(); }
+        }
+
+        private void TsButtonCollapse_Click(object sender, EventArgs e)
+        {
+            TreeNode selectedNode = treeView.SelectedNode;
+            if (selectedNode != null)
+            {
+                if (selectedNode.Parent != null) { selectedNode.Parent.Collapse(); }
+                else { selectedNode.Collapse(); }
+            }
+            else { treeView.CollapseAll(); }
         }
 
         private void FirstLetterUpperToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1797,5 +1840,20 @@ namespace ClipMenu
 
         private void File2TxtStripMenuItem_Click(object sender, EventArgs e) { SendText(-1, true); }
 
+        private void SnipMenuStrip_Opening(object sender, CancelEventArgs e)
+        {
+            TreeNode selectedNode = treeView.SelectedNode;
+            linkSeparatorSnipMenu.Visible = openLinkSnipMenuItem.Visible = selectedNode != null && new Regex(@"^((http|https)://|www\.)\S+$").IsMatch(selectedNode.Text);
+        }
+
+        private void OpenLinkSnipMenuItem_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                ProcessStartInfo psi = new(treeView.SelectedNode.Text) { UseShellExecute = true };
+                Process.Start(psi);
+            }
+            catch (Exception ex) when (ex is Win32Exception || ex is InvalidOperationException) { Utilities.ErrorMsgTaskDlg(Handle, ex.Message); }
+        }
     }
 }
