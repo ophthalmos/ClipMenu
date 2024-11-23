@@ -35,7 +35,8 @@
             exitToolStripMenuItem = new ToolStripMenuItem();
             editToolStripMenuItem = new ToolStripMenuItem();
             patientPhotoToolStripMenuItem = new ToolStripMenuItem();
-            xmlImagePathToolStripMenuItem = new ToolStripMenuItem();
+            settingsToolStripMenuItem = new ToolStripMenuItem();
+            imagePathToolStripMenuItem = new ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)pictureBox).BeginInit();
             menuStrip.SuspendLayout();
             SuspendLayout();
@@ -52,7 +53,7 @@
             // 
             // menuStrip
             // 
-            menuStrip.Items.AddRange(new ToolStripItem[] { fileToolStripMenuItem, editToolStripMenuItem });
+            menuStrip.Items.AddRange(new ToolStripItem[] { fileToolStripMenuItem, editToolStripMenuItem, settingsToolStripMenuItem });
             menuStrip.Location = new Point(0, 0);
             menuStrip.Name = "menuStrip";
             menuStrip.Size = new Size(256, 24);
@@ -64,51 +65,55 @@
             fileToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { exitToolStripMenuItem });
             fileToolStripMenuItem.Name = "fileToolStripMenuItem";
             fileToolStripMenuItem.Size = new Size(46, 20);
-            fileToolStripMenuItem.Text = "Datei";
+            fileToolStripMenuItem.Text = "&Datei";
             // 
             // exitToolStripMenuItem
             // 
             exitToolStripMenuItem.Name = "exitToolStripMenuItem";
             exitToolStripMenuItem.ShortcutKeyDisplayString = "Esc";
             exitToolStripMenuItem.Size = new Size(144, 22);
-            exitToolStripMenuItem.Text = "Beenden";
+            exitToolStripMenuItem.Text = "&Beenden";
             exitToolStripMenuItem.Click += ExitToolStripMenuItem_Click;
             // 
             // editToolStripMenuItem
             // 
-            editToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { patientPhotoToolStripMenuItem, xmlImagePathToolStripMenuItem });
+            editToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { patientPhotoToolStripMenuItem });
             editToolStripMenuItem.Name = "editToolStripMenuItem";
             editToolStripMenuItem.Size = new Size(75, 20);
-            editToolStripMenuItem.Text = "Bearbeiten";
+            editToolStripMenuItem.Text = "&Bearbeiten";
             // 
             // patientPhotoToolStripMenuItem
             // 
             patientPhotoToolStripMenuItem.Name = "patientPhotoToolStripMenuItem";
             patientPhotoToolStripMenuItem.ShortcutKeyDisplayString = "Strg+I";
             patientPhotoToolStripMenuItem.Size = new Size(230, 22);
-            patientPhotoToolStripMenuItem.Text = "Patientenbild erstellen";
+            patientPhotoToolStripMenuItem.Text = "&Patientenbild erstellen";
             patientPhotoToolStripMenuItem.Click += PatientPhotoToolStripMenuItem_Click;
             // 
-            // xmlImagePathToolStripMenuItem
+            // settingsToolStripMenuItem
             // 
-            xmlImagePathToolStripMenuItem.Enabled = false;
-            xmlImagePathToolStripMenuItem.Name = "xmlImagePathToolStripMenuItem";
-            xmlImagePathToolStripMenuItem.Size = new Size(230, 22);
-            xmlImagePathToolStripMenuItem.Text = "»ImagePatth« in XML-File: ";
+            settingsToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { imagePathToolStripMenuItem });
+            settingsToolStripMenuItem.Name = "settingsToolStripMenuItem";
+            settingsToolStripMenuItem.Size = new Size(90, 20);
+            settingsToolStripMenuItem.Text = "&Einstellungen";
+            // 
+            // imagePathToolStripMenuItem
+            // 
+            imagePathToolStripMenuItem.Name = "imagePathToolStripMenuItem";
+            imagePathToolStripMenuItem.Size = new Size(195, 22);
+            imagePathToolStripMenuItem.Text = "&Patientenbild-Ordner…";
+            imagePathToolStripMenuItem.Click += ImagePathToolStripMenuItem_Click;
             // 
             // ImageView
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            AutoSize = true;
             ClientSize = new Size(256, 274);
             Controls.Add(pictureBox);
             Controls.Add(menuStrip);
-            FormBorderStyle = FormBorderStyle.Fixed3D;
             Icon = (Icon)resources.GetObject("$this.Icon");
             MainMenuStrip = menuStrip;
             Name = "ImageView";
-            SizeGripStyle = SizeGripStyle.Hide;
             StartPosition = FormStartPosition.CenterParent;
             Text = "ImageView";
             TopMost = true;
@@ -127,6 +132,7 @@
         private ToolStripMenuItem exitToolStripMenuItem;
         private ToolStripMenuItem editToolStripMenuItem;
         private ToolStripMenuItem patientPhotoToolStripMenuItem;
-        private ToolStripMenuItem xmlImagePathToolStripMenuItem;
+        private ToolStripMenuItem settingsToolStripMenuItem;
+        private ToolStripMenuItem imagePathToolStripMenuItem;
     }
 }

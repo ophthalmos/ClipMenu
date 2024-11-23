@@ -1,4 +1,5 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Drawing.Text;
+using System.Text.RegularExpressions;
 
 namespace ClipMenu
 {
@@ -8,20 +9,39 @@ namespace ClipMenu
 
         private int searchStart = 0;
         private string searchString;
+        private readonly string txtboxText;
+        private readonly string fontLast = string.Empty;
         private bool caseChecked = false;
+        private bool fontChanged = false;
 
-        public FrmClipEdit(string clipText, bool medistarRef = false)
+        public FrmClipEdit(string clipText, string fontInfo, bool medistarRef = false)
         {
             InitializeComponent();
-            textBox.Text = Clipboard.ContainsText() ? clipText : "";
+            txtboxText = Clipboard.ContainsText() ? clipText : "";
+            if (!string.IsNullOrEmpty(txtboxText)) { backgroundWorker.RunWorkerAsync(); }
+
             if (medistarRef)
             {
                 textBox.Font = new Font("Courier New", 14.0f, FontStyle.Bold);
                 wordwrapToolStripMenuItem.Checked = textBox.WordWrap = false;
                 textBox.SelectionStart = textBox.Text.Length; // Cursor ans Ende
             }
-            else { textBox.SelectAll(); } // textBox.SelectionStart = textBox.Text.Length; // Cursor ans Ende
+            else
+            {
+                textBox.Font = new FontConverter().ConvertFromInvariantString(fontInfo) as Font;
+                textBox.SelectAll();
+            }
+            fontLast = textBox.Font.Name + ", " + (int)textBox.Font.Size + "pt" + (textBox.Font.Bold ? ", fett" : "") + (textBox.Font.Italic ? ", kursiv" : "");
+        }
 
+        private void BackgroundWorker_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)
+        { //Hier könnte eine aufwändige Operation durchgeführt werden., Das Problem ist hier allerdings die Wrap-Eigenschaft der TextBox.
+            e.Result = txtboxText;
+            textBox.Text = "Bitte warten…"; // funktioniert nur mit BackgroundWorker, deshalb doch sinnvoll
+        }
+        private void BackgroundWorker_RunWorkerCompleted(object sender, System.ComponentModel.RunWorkerCompletedEventArgs e)
+        {
+            if (e.Result != null) { textBox.Text = (string)e.Result; }
         }
 
         private void FrmClipEdit_Load(object sender, EventArgs e)
@@ -36,6 +56,43 @@ namespace ClipMenu
         {
             NativeMethods.SendMessage(textBox.Handle, NativeMethods.EM_SETMARGINS, NativeMethods.EC_LEFTMARGIN, 65536 + 3);
             textBox.Focus();
+        }
+
+        private void FrmClipEdit_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            Utilities.IsEditOpen = false;
+            NativeMethods.PostMessage(Application.OpenForms[0].Handle, NativeMethods.WM_CLIPEDIT_MSG, 0, 0); // dontHide false;
+            if (fontChanged)
+            {
+                TaskDialogButton btnCustom = new TaskDialogCommandLinkButton("&Benutzerdefiniert", textBox.Font.Name + ", " + Math.Round(textBox.Font.Size, 0) + "pt" +
+                    (textBox.Font.Bold ? ", fett" : "") + (textBox.Font.Italic ? ", kursiv" : ""));
+                TaskDialogButton btnNormal = new TaskDialogCommandLinkButton("&Programmstandard", "Segoe UI, 12pt");
+                TaskDialogPage page = new()
+                {
+                    Caption = "ClipMenu-Einstellungen",
+                    Heading = "Welche Schriftart und -größe möchten Sie zukünftig in ClipEdit verwenden?",
+                    Text = "Bisher " + fontLast,
+                    AllowCancel = true,
+                    Icon = new(new Icon(SystemIcons.Question, 32, 32)),
+                    Buttons = { btnCustom, btnNormal, TaskDialogButton.Cancel }
+                };
+                TaskDialogButton result = TaskDialog.ShowDialog(this, page);
+                if (result == btnCustom)
+                {
+                    FontFamily[] fontFamilies = new InstalledFontCollection().Families;
+                    for (int j = 0; j < fontFamilies.Length; ++j)
+                    {
+                        if (fontFamilies[j].Name.Equals(textBox.Font.Name))
+                        {
+                            NativeMethods.PostMessage(Application.OpenForms[0].Handle, NativeMethods.WM_CLIPEDIT_FNT, j, 0);
+                            break;
+                        }
+                    }
+                    NativeMethods.PostMessage(Application.OpenForms[0].Handle, NativeMethods.WM_CLIPEDIT_FSZ, (int)Math.Round(textBox.Font.Size, 0), 0);
+                    NativeMethods.PostMessage(Application.OpenForms[0].Handle, NativeMethods.WM_CLIPEDIT_STY, Utilities.GetIntFromBools(textBox.Font.Bold, textBox.Font.Italic), 0);
+                }
+                else if (result == btnNormal) { NativeMethods.PostMessage(Application.OpenForms[0].Handle, NativeMethods.WM_CLIPEDIT_FNT, -1, 0); } // ändert auch Schriftgröße
+            }
         }
 
         protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
@@ -68,6 +125,11 @@ namespace ClipMenu
                 case Keys.A | Keys.Control:
                     {
                         textBox.SelectAll();
+                        return true;
+                    }
+                case Keys.D | Keys.Control:
+                    {
+                        FontDialogToolStripMenuItem_Click(null, null);
                         return true;
                     }
                 case Keys.F | Keys.Control:
@@ -128,12 +190,12 @@ namespace ClipMenu
 
         private void LargeToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (textBox.Font.Size < 36) { textBox.Font = new Font(textBox.Font.FontFamily, textBox.Font.Size + 2); }
+            if (textBox.Font.Size < 36) { textBox.Font = new Font(textBox.Font.FontFamily, textBox.Font.Size + 2.0F); }
         }
 
         private void SmallToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (textBox.Font.Size > 8) { textBox.Font = new Font(textBox.Font.FontFamily, textBox.Font.Size - 2); }
+            if (textBox.Font.Size > 8) { textBox.Font = new Font(textBox.Font.FontFamily, textBox.Font.Size - 2.0F); }
         }
 
         private void NormalToolStripMenuItem_Click(object sender, EventArgs e)
@@ -176,12 +238,6 @@ namespace ClipMenu
         }
 
         private void ExitToolStripMenuItem_Click(object sender, EventArgs e) { Close(); }
-
-        private void FrmClipEdit_FormClosing(object sender, FormClosingEventArgs e)
-        {
-            Utilities.IsEditOpen = false;
-            NativeMethods.PostMessage(Application.OpenForms[0].Handle, NativeMethods.WM_CLIPEDIT_MSG, 0, 0); // dontHide false;
-        }
 
         private void DeleteAllToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -250,5 +306,28 @@ namespace ClipMenu
 
         private void TextBox_KeyUp(object sender, KeyEventArgs e) { searchStart = textBox.SelectionStart; }
         private void TextBox_MouseClick(object sender, MouseEventArgs e) { searchStart = textBox.SelectionStart; }
+
+        private void FontDialogToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            fontDialog.Font = textBox.Font;
+            string fontName = fontDialog.Font.FontFamily.Name;
+            int fontSize = (int)fontDialog.Font.SizeInPoints;
+            int fontStyle = Utilities.GetIntFromBools(textBox.Font.Bold, textBox.Font.Italic);
+            if (fontDialog.ShowDialog() == DialogResult.OK)
+            {
+                textBox.Font = fontDialog.Font;
+                int style = Utilities.GetIntFromBools(textBox.Font.Bold, textBox.Font.Italic);
+                if ((textBox.Font.Name != fontName || (int)textBox.Font.SizeInPoints != fontSize || style != fontStyle)
+                    && Utilities.IsInFontCollection(textBox.Font.Name)) { fontChanged = true; }
+            }
+        }
+
+        private void ViewToolStripMenuItem_DropDownOpening(object sender, EventArgs e)
+        {
+            largeToolStripMenuItem.Enabled = textBox.Font.Size < 36;
+            smallToolStripMenuItem.Enabled = textBox.Font.Size > 8;
+            normalToolStripMenuItem.Enabled = textBox.Font.Size != 12;
+        }
+
     }
 }

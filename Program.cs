@@ -17,7 +17,7 @@ namespace ClipMenu
                 ApplicationConfiguration.Initialize();
                 Application.Run(new FrmClipMenu());
             }
-            else { MessageBox.Show("Das Progaramm wird bereits ausgeführt!", "ClipMenu"); } // make the currently running instance jump on top of all the other windows
+            else { MessageBox.Show("ClipMenu wird bereits ausgeführt!", "ClipMenu"); } // make the currently running instance jump on top of all the other windows
         }
     }
 }

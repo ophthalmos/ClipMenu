@@ -36,10 +36,14 @@ namespace ClipMenu
         internal const int HOTKEY_ID0 = 0x0311;
         internal const int HOTKEY_ID1 = 0x0312;
         internal const int HOTKEY_ID2 = 0x0313;
+        internal const int HOTKEY_ID3 = 0x0314;
 
         internal const int WM_USER = 0x0400; // (Modal)ClipCalc.DecimalPlaces
         internal const int WM_CLIPEDIT_MSG = WM_USER + 1; // ClipEdit ⇒ ClipMenu.dontHide
         internal const int WM_CLIPCALC_MSG = WM_USER + 2; // ClipEdit ⇒ ClipMenu.dontHide
+        internal const int WM_CLIPEDIT_FNT = WM_USER + 3; // ClipEdit ⇒ ClipEditFont.Name
+        internal const int WM_CLIPEDIT_FSZ = WM_USER + 4; // ClipEdit ⇒ ClipEditFont.Size
+        internal const int WM_CLIPEDIT_STY = WM_USER + 5; // ClipEdit ⇒ ClipEditFont.Style
 
         internal const int POWER_REQUEST_CONTEXT_VERSION = 0;
         internal const int POWER_REQUEST_CONTEXT_SIMPLE_STRING = 0x1;
@@ -150,6 +154,15 @@ namespace ClipMenu
             SendKeyDown(KeyCode.KEY_C);
             Thread.Sleep(70);
             SendKeyUp(KeyCode.KEY_C);
+            SendKeyUp(KeyCode.VK_CONTROL);
+        }
+
+        internal static void SendKeysCut()
+        {
+            SendKeyDown(KeyCode.VK_CONTROL);
+            SendKeyDown(KeyCode.KEY_X);
+            Thread.Sleep(70);
+            SendKeyUp(KeyCode.KEY_X);
             SendKeyUp(KeyCode.VK_CONTROL);
         }
 
@@ -340,6 +353,7 @@ namespace ClipMenu
         public enum KeyCode : ushort
         {
             KEY_C = 0x43,
+            KEY_X = 0x58,
             KEY_V = 0x56,
             KEY_R = 0x52,
             VK_INSERT = 0x2D,

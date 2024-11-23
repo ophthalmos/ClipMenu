@@ -2,6 +2,7 @@
 using System.Data;
 using System.Diagnostics;
 using System.Drawing.Drawing2D;
+using System.Drawing.Text;
 using System.Globalization;
 using System.Media;
 using System.Text.RegularExpressions;
@@ -34,6 +35,7 @@ namespace ClipMenu
         private int maxItems = 50;
         private string currNodeText = string.Empty;
         private string imagePath = string.Empty;
+        private string fontClipEdit = "Segoe UI, 12pt";
         private bool passwdExcld = true;
         private bool copyNoBreak = false;
         private bool plainText = false;
@@ -182,6 +184,10 @@ namespace ClipMenu
                         {
                             imagePath = element.Element("ImagePath").Value;
                         }
+                        if (element.Element("ClipEditFont") != null)
+                        {
+                            fontClipEdit = element.Element("ClipEditFont").Value;
+                        }
                     }
                     foreach (XElement element in xDocument.Root.Descendants("Dates"))
                     {
@@ -269,6 +275,8 @@ namespace ClipMenu
 
             if (copyNoBreak && NativeMethods.RegisterHotKey(Handle, NativeMethods.HOTKEY_ID0, (uint)(NativeMethods.Modifiers.Shift | NativeMethods.Modifiers.Control), (uint)Keys.C) == false)
             { Utilities.ErrorMsgTaskDlg(Handle, "Strg+Shift+C konnte nicht registriert werden.\nWahrscheinlich wird die Tastenkombination\nbereits von einer anderen App benutzt."); }
+            if (copyNoBreak && NativeMethods.RegisterHotKey(Handle, NativeMethods.HOTKEY_ID3, (uint)(NativeMethods.Modifiers.Shift | NativeMethods.Modifiers.Control), (uint)Keys.X) == false)
+            { Utilities.ErrorMsgTaskDlg(Handle, "Strg+Shift+X konnte nicht registriert werden.\nWahrscheinlich wird die Tastenkombination\nbereits von einer anderen App benutzt."); }
             if (plainText && NativeMethods.RegisterHotKey(Handle, NativeMethods.HOTKEY_ID1, (uint)(NativeMethods.Modifiers.Shift | NativeMethods.Modifiers.Control), (uint)Keys.V) == false)
             { Utilities.ErrorMsgTaskDlg(Handle, "Strg+Shift+V konnte nicht registriert werden.\nWahrscheinlich wird die Tastenkombination\nbereits von einer anderen App benutzt."); }
             if (plainText && NativeMethods.RegisterHotKey(Handle, NativeMethods.HOTKEY_ID2, (uint)(NativeMethods.Modifiers.Shift | NativeMethods.Modifiers.Control), (uint)Keys.Insert) == false)
@@ -331,7 +339,18 @@ namespace ClipMenu
             {
                 if (Visible) { dontHide = newButton.Checked = true; } // s. FrmClipMenu_Deactivate
                 if (Utilities.IsEditOpen) { Application.OpenForms["FrmClipEdit"]?.Activate(); }
-                else { new FrmClipEdit(dataTable.Rows.Count > 0 && dataTable.Rows[0]["Type"].ToString().Equals("text") ? dataTable.Rows[0]["Text"].ToString() : string.Empty, medistarRef).Show(); }
+                else
+                {
+                    // new FrmClipEdit(dataTable.Rows.Count > 0 && dataTable.Rows[0]["Type"].ToString().Equals("text") ? (dataTable.Rows[0]["Text"].ToString(), fontClipEdit, false) : (string.Empty, fontClipEdit, medistarRef)).Show(); 
+                    if (dataTable.Rows.Count > 0 && dataTable.Rows[0]["Type"].ToString().Equals("text"))
+                    {
+                        new FrmClipEdit(dataTable.Rows[0]["Text"].ToString(), fontClipEdit, false).Show();
+                    }
+                    else
+                    {
+                        new FrmClipEdit(string.Empty, fontClipEdit, medistarRef).Show();
+                    }
+                }
             }
             else if (e.KeyCode == Keys.RWin) { NativeMethods.SendKeysAltTab(); }
             else if (e.KeyCode == Keys.Apps) { NativeMethods.SendKeysAltTab(); }
@@ -407,6 +426,7 @@ namespace ClipMenu
             //Utilities.EnableStandby(Handle);
             NativeMethods.UnhookWinEvent(hWinEventHook);
             NativeMethods.UnregisterHotKey(Handle, NativeMethods.HOTKEY_ID0);
+            NativeMethods.UnregisterHotKey(Handle, NativeMethods.HOTKEY_ID3);
             NativeMethods.UnregisterHotKey(Handle, NativeMethods.HOTKEY_ID1);
             NativeMethods.UnregisterHotKey(Handle, NativeMethods.HOTKEY_ID2);
             NativeMethods.UnregisterAltTabRWin();
@@ -431,40 +451,44 @@ namespace ClipMenu
 
         private void TabControl_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (tabControl.SelectedIndex == 0)
+            try
             {
-                listBox.Focus();
-                toolStripStatusLabel.Text = Utilities.CountListBox(listBox);
-                toolStripStatusLabel.IsLink = false;
-                if (workAround)
+                if (tabControl.SelectedIndex == 0)
                 {
-                    listBox.DrawMode = DrawMode.OwnerDrawFixed;
-                    listBox.DrawMode = DrawMode.OwnerDrawVariable;
-                    workAround = false;
-                }
-            }
-            else if (tabControl.SelectedIndex == 1)
-            {
-                toolStripStatusLabel.Text = Utilities.CountChildNodes(treeView);
-                toolStripStatusLabel.IsLink = false;
-                if (treeView.Nodes.Count > 0)
-                {
-                    TreeNode dateNode = treeView.Nodes.Find("Dates", true)[0];
-                    if (dateNode != null)
+                    listBox.Focus();
+                    toolStripStatusLabel.Text = Utilities.CountListBox(listBox);
+                    toolStripStatusLabel.IsLink = false;
+                    if (workAround)
                     {
-                        foreach (TreeNode node in dateNode.Nodes)
+                        listBox.DrawMode = DrawMode.OwnerDrawFixed;
+                        listBox.DrawMode = DrawMode.OwnerDrawVariable;
+                        workAround = false;
+                    }
+                }
+                else if (tabControl.SelectedIndex == 1)
+                {
+                    toolStripStatusLabel.Text = Utilities.CountChildNodes(treeView);
+                    toolStripStatusLabel.IsLink = false;
+                    if (treeView.Nodes.Count > 0)
+                    {
+                        TreeNode dateNode = treeView.Nodes.Find("Dates", true)[0];
+                        if (dateNode != null)
                         {
-                            Tuple<string, bool> tuple = Utilities.GetDateTimeNowFormatted(node.Text);
-                            if (tuple != null && tuple.Item2) { node.Text = tuple.Item1; }
+                            foreach (TreeNode node in dateNode.Nodes)
+                            {
+                                Tuple<string, bool> tuple = Utilities.GetDateTimeNowFormatted(node.Text);
+                                if (tuple != null && tuple.Item2) { node.Text = tuple.Item1; }
+                            }
                         }
                     }
                 }
+                else
+                {
+                    toolStripStatusLabel.Text = xmlPath;
+                    toolStripStatusLabel.IsLink = true;
+                }
             }
-            else
-            {
-                toolStripStatusLabel.Text = xmlPath;
-                toolStripStatusLabel.IsLink = true;
-            }
+            catch (IndexOutOfRangeException ex) { Utilities.ErrorMsgTaskDlg(Handle, ex.Message); }
         }
 
         private void TbSearch_KeyDown(object sender, KeyEventArgs e)
@@ -1029,6 +1053,19 @@ namespace ClipMenu
                     RemoveLineBreaksToolStripMenuItem_Click(null, null);
                 }
             }
+            else if (m.Msg == NativeMethods.WM_HOTKEY && m.WParam == NativeMethods.HOTKEY_ID3)
+            {
+                NativeMethods.SendKeysCut();
+                Thread.Sleep(10);
+                Application.DoEvents();
+                DataRow foundRow = dataTable.Rows[0];
+                if (foundRow != null && foundRow["Type"].ToString().Equals("text", StringComparison.Ordinal) && !string.IsNullOrEmpty(foundRow["Text"].ToString()))
+                {
+                    selectedString = foundRow["Text"].ToString();
+                    selecedRow = foundRow;
+                    RemoveLineBreaksToolStripMenuItem_Click(null, null);
+                }
+            }
 
             else if (m.Msg == NativeMethods.WM_HOTKEY && (m.WParam == NativeMethods.HOTKEY_ID1 || m.WParam == NativeMethods.HOTKEY_ID2)) // Send as plain text
             {
@@ -1058,8 +1095,46 @@ namespace ClipMenu
             else if (m.Msg == NativeMethods.WM_USER) { decimalPlaces = m.WParam.ToInt32(); } // form ClipCalc
             else if (m.Msg == NativeMethods.WM_CLIPEDIT_MSG || m.Msg == NativeMethods.WM_CLIPCALC_MSG)
             {
-                if (dontHide) { dontHide = newButton.Checked = false; }
-                //m.Result = IntPtr.Zero;
+                if (dontHide) { dontHide = newButton.Checked = false; }   //m.Result = IntPtr.Zero;
+            }
+            else if (m.Msg == NativeMethods.WM_CLIPEDIT_FNT)
+            {
+                int wParam = m.WParam.ToInt32();
+                if (wParam < 0) { fontClipEdit = "Segoe UI, 12pt"; }
+                else
+                {
+                    FontFamily[] fontFamilies = new InstalledFontCollection().Families;
+                    for (int j = 0; j < fontFamilies.Length; ++j)
+                    {
+                        if (j == wParam)
+                        {
+                            fontClipEdit = fontFamilies[j].Name;
+                            break;
+                        }
+                    }
+                }
+            }
+            else if (m.Msg == NativeMethods.WM_CLIPEDIT_FSZ) { fontClipEdit = ((string[])fontClipEdit.Split(','))[0] + ", " + m.WParam.ToInt32() + "pt"; }
+            else if (m.Msg == NativeMethods.WM_CLIPEDIT_STY) { 
+                string style = "style=";
+                switch (m.WParam.ToInt32())
+                {
+                    case 1:
+                        style += "Italic";
+                        break;
+                    case 2:
+                        style += "Bold";
+                        break;
+                    case 3:
+                        style += "Bold, Italic";
+                        break;
+                    default:
+                        style = string.Empty;
+                        break;
+                }
+                int secondCommaIndex = fontClipEdit.IndexOf(',', fontClipEdit.IndexOf(',') + 1);
+                fontClipEdit = secondCommaIndex > 0 ? fontClipEdit[..secondCommaIndex] : fontClipEdit;
+                fontClipEdit += !string.IsNullOrEmpty(style) ? ", " + style : ""; ;
             }
             else { base.WndProc(ref m); }
         }
@@ -1082,6 +1157,7 @@ namespace ClipMenu
             element.Add(new XElement("SymbolsExpanded", treeView.Nodes["Symbols"].IsExpanded));
             element.Add(new XElement("FormSize", Width.ToString() + "," + Height.ToString()));
             element.Add(new XElement("ImagePath", imagePath));
+            element.Add(new XElement("ClipEditFont", fontClipEdit));
             return element;
         }
 
@@ -1402,7 +1478,7 @@ namespace ClipMenu
                         dontHide = true;
                         using ImageView f = new(image, imagePath);
                         f.ShowDialog();
-                        //imagePath = f.PictureUserPath;
+                        imagePath = f.ImagePath;
                     }
                 }
                 else
@@ -1678,8 +1754,7 @@ namespace ClipMenu
         {
             if (Utilities.IsCalcOpen) { Application.OpenForms["FrmClipCalc"]?.Close(); }
             using FrmClipCalc f = new(Utilities.RemoveInvalidCalculationChars(selectedString), decimalPlaces);
-            f.ShowDialog();
-            if (DialogResult == DialogResult.OK)
+            if (f.ShowDialog() == DialogResult.OK)
             {
                 if (!string.IsNullOrEmpty(f.Result)) { SendSnippet(f.Result.TrimStart('~')); }
             }
@@ -1795,7 +1870,18 @@ namespace ClipMenu
         private void EditorToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (Utilities.IsEditOpen) { Application.OpenForms["FrmClipEdit"]?.Activate(); }
-            else { new FrmClipEdit(dataTable.Rows.Count > 0 && dataTable.Rows[0]["Type"].ToString().Equals("text") ? dataTable.Rows[0]["Text"].ToString() : string.Empty, medistarRef).Show(); }
+            else
+            {
+                //new FrmClipEdit(dataTable.Rows.Count > 0 && dataTable.Rows[0]["Type"].ToString().Equals("text") ? (dataTable.Rows[0]["Text"].ToString(), fontClipEdit, false) : (string.Empty, fontClipEdit, medistarRef)).Show();
+                if (dataTable.Rows.Count > 0 && dataTable.Rows[0]["Type"].ToString().Equals("text", StringComparison.Ordinal))
+                {
+                    new FrmClipEdit(dataTable.Rows[0]["Text"].ToString(), fontClipEdit, false).Show();
+                }
+                else
+                {
+                    new FrmClipEdit(string.Empty, fontClipEdit, medistarRef).Show();
+                }
+            }
         }
 
         private void RechnerToolStripMenuItem_Click(object sender, EventArgs e)

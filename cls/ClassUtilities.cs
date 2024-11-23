@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Diagnostics;
 using System.Drawing.Imaging;
+using System.Drawing.Text;
 using System.Globalization;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -186,7 +187,7 @@ namespace ClipMenu
             {
                 if (string.IsNullOrEmpty(treeNode.Name)) { continue; }
                 XElement element = new(treeNode.Name);
-                if (treeNode.Parent != null) { element.Value = treeNode.Text + (string.IsNullOrEmpty(treeNode.ToolTipText) ? "" : "|" + treeNode.ToolTipText); } 
+                if (treeNode.Parent != null) { element.Value = treeNode.Text + (string.IsNullOrEmpty(treeNode.ToolTipText) ? "" : "|" + treeNode.ToolTipText); }
                 else { element.Add(CreateXmlElementList(treeNode.Nodes)); } // d.h. Funktion wird ein zweites Mal durchlaufen 
                 elements.Add(element);
             }
@@ -245,6 +246,17 @@ namespace ClipMenu
                 for (int i = 0; i < tv.Nodes.Count; i++) { count += tv.Nodes[i].GetNodeCount(false); }
             }
             return count == 0 ? string.Empty : count == 1 ? "Ein Eintrag" : $"{count} Einträge";
+        }
+
+        internal static int GetIntFromBools(bool foo, bool bar) { return ((foo ? 1 : 0) << 1) | (bar ? 1 : 0); } // 0, 1: Italic, 2: Bold, 3: BoldItalic
+
+        internal static bool IsInFontCollection(string fontName)
+        {
+            foreach (FontFamily fontFamily in new InstalledFontCollection().Families)
+            {
+                if (fontFamily.Name == fontName) { return true; }
+            }
+            return false;
         }
 
         internal static string CountListBox(ListBox lb)

@@ -55,11 +55,15 @@
             normalToolStripMenuItem = new ToolStripMenuItem();
             toolStripSeparator3 = new ToolStripSeparator();
             wordwrapToolStripMenuItem = new ToolStripMenuItem();
+            toolStripSeparator6 = new ToolStripSeparator();
+            fontDialogToolStripMenuItem = new ToolStripMenuItem();
             helpToolStripMenuItem = new ToolStripMenuItem();
             aboutToolStripMenuItem = new ToolStripMenuItem();
             sendToolStripMenuItem = new ToolStripMenuItem();
             deleteAllToolStripMenuItem = new ToolStripMenuItem();
             saveFileDialog = new SaveFileDialog();
+            fontDialog = new FontDialog();
+            backgroundWorker = new System.ComponentModel.BackgroundWorker();
             statusStrip.SuspendLayout();
             menuStrip.SuspendLayout();
             SuspendLayout();
@@ -70,6 +74,7 @@
             textBox.AcceptsTab = true;
             textBox.AllowDrop = true;
             textBox.Dock = DockStyle.Fill;
+            textBox.Font = new Font("Segoe UI", 12F);
             textBox.Location = new Point(0, 24);
             textBox.Multiline = true;
             textBox.Name = "textBox";
@@ -219,10 +224,11 @@
             // 
             // viewToolStripMenuItem
             // 
-            viewToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { largeToolStripMenuItem, smallToolStripMenuItem, normalToolStripMenuItem, toolStripSeparator3, wordwrapToolStripMenuItem });
+            viewToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { largeToolStripMenuItem, smallToolStripMenuItem, normalToolStripMenuItem, toolStripSeparator3, wordwrapToolStripMenuItem, toolStripSeparator6, fontDialogToolStripMenuItem });
             viewToolStripMenuItem.Name = "viewToolStripMenuItem";
             viewToolStripMenuItem.Size = new Size(59, 20);
             viewToolStripMenuItem.Text = "Ansicht";
+            viewToolStripMenuItem.DropDownOpening += ViewToolStripMenuItem_DropDownOpening;
             // 
             // largeToolStripMenuItem
             // 
@@ -263,6 +269,19 @@
             wordwrapToolStripMenuItem.Size = new Size(238, 22);
             wordwrapToolStripMenuItem.Text = "Zeilenumbruch";
             wordwrapToolStripMenuItem.Click += WordwrapToolStripMenuItem_Click;
+            // 
+            // toolStripSeparator6
+            // 
+            toolStripSeparator6.Name = "toolStripSeparator6";
+            toolStripSeparator6.Size = new Size(235, 6);
+            // 
+            // fontDialogToolStripMenuItem
+            // 
+            fontDialogToolStripMenuItem.Name = "fontDialogToolStripMenuItem";
+            fontDialogToolStripMenuItem.ShortcutKeyDisplayString = "Strg+D";
+            fontDialogToolStripMenuItem.Size = new Size(238, 22);
+            fontDialogToolStripMenuItem.Text = "Schriftart…";
+            fontDialogToolStripMenuItem.Click += FontDialogToolStripMenuItem_Click;
             // 
             // helpToolStripMenuItem
             // 
@@ -306,6 +325,22 @@
             saveFileDialog.DefaultExt = "txt";
             saveFileDialog.FileName = "ClipMenu.txt";
             saveFileDialog.Filter = "Textdateien(*.txt)|*.txt|Alle Dateien (*.*)|*.*";
+            // 
+            // fontDialog
+            // 
+            fontDialog.AllowScriptChange = false;
+            fontDialog.AllowSimulations = false;
+            fontDialog.AllowVectorFonts = false;
+            fontDialog.AllowVerticalFonts = false;
+            fontDialog.FontMustExist = true;
+            fontDialog.ScriptsOnly = true;
+            fontDialog.ShowEffects = false;
+            // 
+            // backgroundWorker
+            // 
+            backgroundWorker.WorkerReportsProgress = true;
+            backgroundWorker.DoWork += BackgroundWorker_DoWork;
+            backgroundWorker.RunWorkerCompleted += BackgroundWorker_RunWorkerCompleted;
             // 
             // FrmClipEdit
             // 
@@ -371,5 +406,9 @@
         private ToolStripSeparator toolStripSeparator5;
         private ToolStripMenuItem searchForToolStripMenuItem;
         private ToolStripMenuItem searchfurtherToolStripMenuItem;
+        private ToolStripMenuItem fontDialogToolStripMenuItem;
+        private FontDialog fontDialog;
+        private ToolStripSeparator toolStripSeparator6;
+        private System.ComponentModel.BackgroundWorker backgroundWorker;
     }
 }

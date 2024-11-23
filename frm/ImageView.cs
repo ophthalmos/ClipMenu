@@ -5,23 +5,29 @@ namespace ClipMenu
 {
     public partial class ImageView : Form
     {
-        private readonly string defaultPath = string.Empty;
+        public string ImagePath { get { return imagePath; } }
+
+        private string imagePath = string.Empty;
 
         public ImageView(Image image, string pictureUserPath)
         {
             InitializeComponent();
-            pictureBox.ClientSize = new Size(image.Width, image.Height);
+            //pictureBox.ClientSize = new Size(image.Width, image.Height);
+            Height = image.Height + 62;
+            Height = Height > Screen.FromControl(this).Bounds.Height ? Screen.FromControl(this).Bounds.Height : Height;
+            Width = image.Width + 16;
+            Width = Width > Screen.FromControl(this).Bounds.Width ? Screen.FromControl(this).Bounds.Width : Width;
             pictureBox.Image = image;
             Text = pictureBox.Width.ToString() + "x" + pictureBox.Height.ToString();
-            defaultPath = !string.IsNullOrEmpty(pictureUserPath) ? pictureUserPath : Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-            ToolStripControlHost host = new(new TextBox())
-            {
-                AutoSize = true,
-                Text = pictureUserPath,
-                BackColor = SystemColors.Window,
-                Enabled = false
-            };
-            editToolStripMenuItem.DropDownItems.Add(host);
+            imagePath = !string.IsNullOrEmpty(pictureUserPath) ? pictureUserPath : Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+            //ToolStripControlHost host = new(new TextBox())
+            //{
+            //    AutoSize = true,
+            //    Text = pictureUserPath,
+            //    BackColor = SystemColors.Window,
+            //    Enabled = false
+            //};
+            //editToolStripMenuItem.DropDownItems.Add(host);
         }
 
         protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
@@ -57,12 +63,12 @@ namespace ClipMenu
             }
             try
             {
-                if (!Directory.Exists(defaultPath))
+                if (!Directory.Exists(imagePath))
                 {
-                    Utilities.ErrorMsgTaskDlg(Handle, defaultPath + Environment.NewLine + "Der Zielordner wurde nicht gefunden.", TaskDialogIcon.Information);
+                    Utilities.ErrorMsgTaskDlg(Handle, imagePath + Environment.NewLine + "Der Zielordner wurde nicht gefunden.", TaskDialogIcon.Information);
                     return;
                 }
-                else { path = Path.Combine(defaultPath, "Patientenbild.jpg"); }
+                else { path = Path.Combine(imagePath, "Patientenbild.jpg"); }
                 new Bitmap(new Bitmap(pictureBox.Image), new Size(newWidth, newHeight)).Save(path, ImageFormat.Jpeg);
                 Utilities.ErrorMsgTaskDlg(Handle, path + "," + Environment.NewLine + newWidth + " × " + newHeight + " Pixel, erfolgreich gespeichert.", TaskDialogIcon.Information);
                 Close();
@@ -71,6 +77,14 @@ namespace ClipMenu
 
         }
 
+        private void ImagePathToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            using ImagePath f = new(imagePath);
+            if (f.ShowDialog() == DialogResult.OK)
+            {
+                if (!string.IsNullOrEmpty(f.Result)) { imagePath = f.Result; }
+            }
+        }
     }
 }
 
