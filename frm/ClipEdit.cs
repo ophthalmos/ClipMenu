@@ -1,5 +1,6 @@
 ﻿using System.Drawing.Text;
 using System.Text.RegularExpressions;
+using System.Windows.Forms;
 
 namespace ClipMenu
 {
@@ -135,6 +136,11 @@ namespace ClipMenu
                 case Keys.F | Keys.Control:
                     {
                         SearchForToolStripMenuItem_Click(null, null);
+                        return true;
+                    }
+                case Keys.O | Keys.Control:
+                    {
+                        OpenToolStripMenuItem_Click(null, null);
                         return true;
                     }
                 case Keys.Z | Keys.Control:
@@ -329,5 +335,13 @@ namespace ClipMenu
             normalToolStripMenuItem.Enabled = textBox.Font.Size != 12;
         }
 
+        private void OpenToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (openFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                try { textBox.Text = File.ReadAllText(openFileDialog.FileName); }
+                catch (Exception ex) { MessageBox.Show("Fehler beim Laden der Datei: " + ex.Message); }
+            }
+        }
     }
 }

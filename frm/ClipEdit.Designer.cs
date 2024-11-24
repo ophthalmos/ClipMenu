@@ -34,8 +34,10 @@
             toolStripStatusLabel = new ToolStripStatusLabel();
             menuStrip = new MenuStrip();
             fileToolStripMenuItem = new ToolStripMenuItem();
-            saveToolStripMenuItem = new ToolStripMenuItem();
             toolStripSeparator2 = new ToolStripSeparator();
+            openToolStripMenuItem = new ToolStripMenuItem();
+            toolStripSeparator7 = new ToolStripSeparator();
+            saveToolStripMenuItem = new ToolStripMenuItem();
             exitToolStripMenuItem = new ToolStripMenuItem();
             editToolStripMenuItem = new ToolStripMenuItem();
             undoToolStripMenuItem = new ToolStripMenuItem();
@@ -64,6 +66,8 @@
             saveFileDialog = new SaveFileDialog();
             fontDialog = new FontDialog();
             backgroundWorker = new System.ComponentModel.BackgroundWorker();
+            openFileDialog = new OpenFileDialog();
+            toolStripSeparator8 = new ToolStripSeparator();
             statusStrip.SuspendLayout();
             menuStrip.SuspendLayout();
             SuspendLayout();
@@ -111,29 +115,42 @@
             // 
             // fileToolStripMenuItem
             // 
-            fileToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { saveToolStripMenuItem, toolStripSeparator2, exitToolStripMenuItem });
+            fileToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { toolStripSeparator2, openToolStripMenuItem, toolStripSeparator7, saveToolStripMenuItem, toolStripSeparator8, exitToolStripMenuItem });
             fileToolStripMenuItem.Name = "fileToolStripMenuItem";
             fileToolStripMenuItem.Size = new Size(46, 20);
             fileToolStripMenuItem.Text = "Datei";
+            // 
+            // toolStripSeparator2
+            // 
+            toolStripSeparator2.Name = "toolStripSeparator2";
+            toolStripSeparator2.Size = new Size(177, 6);
+            // 
+            // openToolStripMenuItem
+            // 
+            openToolStripMenuItem.Name = "openToolStripMenuItem";
+            openToolStripMenuItem.ShortcutKeyDisplayString = "Strg+O";
+            openToolStripMenuItem.Size = new Size(180, 22);
+            openToolStripMenuItem.Text = "Öffnen";
+            openToolStripMenuItem.Click += OpenToolStripMenuItem_Click;
+            // 
+            // toolStripSeparator7
+            // 
+            toolStripSeparator7.Name = "toolStripSeparator7";
+            toolStripSeparator7.Size = new Size(177, 6);
             // 
             // saveToolStripMenuItem
             // 
             saveToolStripMenuItem.Name = "saveToolStripMenuItem";
             saveToolStripMenuItem.ShortcutKeyDisplayString = "Strg+S";
-            saveToolStripMenuItem.Size = new Size(168, 22);
+            saveToolStripMenuItem.Size = new Size(180, 22);
             saveToolStripMenuItem.Text = "Speichern";
             saveToolStripMenuItem.Click += SaveToolStripMenuItem_Click;
-            // 
-            // toolStripSeparator2
-            // 
-            toolStripSeparator2.Name = "toolStripSeparator2";
-            toolStripSeparator2.Size = new Size(165, 6);
             // 
             // exitToolStripMenuItem
             // 
             exitToolStripMenuItem.Name = "exitToolStripMenuItem";
             exitToolStripMenuItem.ShortcutKeyDisplayString = "Esc";
-            exitToolStripMenuItem.Size = new Size(168, 22);
+            exitToolStripMenuItem.Size = new Size(180, 22);
             exitToolStripMenuItem.Text = "Schließen";
             exitToolStripMenuItem.Click += ExitToolStripMenuItem_Click;
             // 
@@ -342,6 +359,19 @@
             backgroundWorker.DoWork += BackgroundWorker_DoWork;
             backgroundWorker.RunWorkerCompleted += BackgroundWorker_RunWorkerCompleted;
             // 
+            // openFileDialog
+            // 
+            openFileDialog.DefaultExt = "txt";
+            openFileDialog.Filter = "Textdateien (*.txt)|*.txt|Alle Dateien (*.*)|*.*";
+            openFileDialog.FilterIndex = 2;
+            openFileDialog.SupportMultiDottedExtensions = true;
+            openFileDialog.Title = "Öffnen";
+            // 
+            // toolStripSeparator8
+            // 
+            toolStripSeparator8.Name = "toolStripSeparator8";
+            toolStripSeparator8.Size = new Size(177, 6);
+            // 
             // FrmClipEdit
             // 
             AutoScaleDimensions = new SizeF(7F, 17F);
@@ -410,5 +440,9 @@
         private FontDialog fontDialog;
         private ToolStripSeparator toolStripSeparator6;
         private System.ComponentModel.BackgroundWorker backgroundWorker;
+        private OpenFileDialog openFileDialog;
+        private ToolStripMenuItem openToolStripMenuItem;
+        private ToolStripSeparator toolStripSeparator7;
+        private ToolStripSeparator toolStripSeparator8;
     }
 }

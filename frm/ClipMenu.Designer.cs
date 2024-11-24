@@ -85,6 +85,8 @@
             downToolStripMenuItem = new ToolStripMenuItem();
             toolStripSeparator13 = new ToolStripSeparator();
             removeToolStripMenuItem = new ToolStripMenuItem();
+            linkSeparatorSnipMenu = new ToolStripSeparator();
+            openLinkSnipMenuItem = new ToolStripMenuItem();
             toolStrip = new ToolStrip();
             tsButtonNew = new ToolStripButton();
             toolStripSeparator2 = new ToolStripSeparator();
@@ -132,8 +134,6 @@
             toolStripStatusLabel = new ToolStripStatusLabel();
             toolTip = new ToolTip(components);
             timer = new System.Windows.Forms.Timer(components);
-            linkSeparatorSnipMenu = new ToolStripSeparator();
-            openLinkSnipMenuItem = new ToolStripMenuItem();
             contextMenuStrip.SuspendLayout();
             clipMenuStrip.SuspendLayout();
             tabControl.SuspendLayout();
@@ -391,6 +391,7 @@
             tabControl.Size = new Size(330, 541);
             tabControl.TabIndex = 0;
             tabControl.SelectedIndexChanged += TabControl_SelectedIndexChanged;
+            tabControl.KeyPress += TabControl_KeyPress;
             // 
             // tabPage1
             // 
@@ -510,12 +511,13 @@
             treeView.NodeMouseClick += TreeView_NodeMouseClick;
             treeView.NodeMouseDoubleClick += TreeView_NodeMouseDoubleClick;
             treeView.KeyDown += TreeView_KeyDown;
+            treeView.KeyPress += TreeView_KeyPress;
             // 
             // snipMenuStrip
             // 
             snipMenuStrip.Items.AddRange(new ToolStripItem[] { editToolStripMenuItem, toolStripSeparator12, upToolStripMenuItem, downToolStripMenuItem, toolStripSeparator13, removeToolStripMenuItem, linkSeparatorSnipMenu, openLinkSnipMenuItem });
             snipMenuStrip.Name = "snipMenuStrip";
-            snipMenuStrip.Size = new Size(181, 154);
+            snipMenuStrip.Size = new Size(172, 132);
             snipMenuStrip.Opening += SnipMenuStrip_Opening;
             // 
             // editToolStripMenuItem
@@ -523,21 +525,21 @@
             editToolStripMenuItem.Image = Properties.Resources.CaseSensitive_16x;
             editToolStripMenuItem.Name = "editToolStripMenuItem";
             editToolStripMenuItem.ShortcutKeyDisplayString = "F2";
-            editToolStripMenuItem.Size = new Size(180, 22);
+            editToolStripMenuItem.Size = new Size(171, 22);
             editToolStripMenuItem.Text = "Bearbeiten";
             editToolStripMenuItem.Click += EditToolStripMenuItem_Click;
             // 
             // toolStripSeparator12
             // 
             toolStripSeparator12.Name = "toolStripSeparator12";
-            toolStripSeparator12.Size = new Size(177, 6);
+            toolStripSeparator12.Size = new Size(168, 6);
             // 
             // upToolStripMenuItem
             // 
             upToolStripMenuItem.Image = Properties.Resources.Upload_gray_16x;
             upToolStripMenuItem.Name = "upToolStripMenuItem";
             upToolStripMenuItem.ShortcutKeyDisplayString = "Alt+↑";
-            upToolStripMenuItem.Size = new Size(180, 22);
+            upToolStripMenuItem.Size = new Size(171, 22);
             upToolStripMenuItem.Text = "Aufwärts";
             upToolStripMenuItem.Click += UpToolStripMenuItem_Click;
             // 
@@ -546,23 +548,37 @@
             downToolStripMenuItem.Image = Properties.Resources.Download_grey_16x;
             downToolStripMenuItem.Name = "downToolStripMenuItem";
             downToolStripMenuItem.ShortcutKeyDisplayString = "Alt+↓";
-            downToolStripMenuItem.Size = new Size(180, 22);
+            downToolStripMenuItem.Size = new Size(171, 22);
             downToolStripMenuItem.Text = "Abwärts";
             downToolStripMenuItem.Click += DownToolStripMenuItem_Click;
             // 
             // toolStripSeparator13
             // 
             toolStripSeparator13.Name = "toolStripSeparator13";
-            toolStripSeparator13.Size = new Size(177, 6);
+            toolStripSeparator13.Size = new Size(168, 6);
             // 
             // removeToolStripMenuItem
             // 
             removeToolStripMenuItem.Image = Properties.Resources.DeleteHS;
             removeToolStripMenuItem.Name = "removeToolStripMenuItem";
             removeToolStripMenuItem.ShortcutKeyDisplayString = "Entf";
-            removeToolStripMenuItem.Size = new Size(180, 22);
+            removeToolStripMenuItem.Size = new Size(171, 22);
             removeToolStripMenuItem.Text = "Löschen";
             removeToolStripMenuItem.Click += RemoveToolStripMenuItem_Click;
+            // 
+            // linkSeparatorSnipMenu
+            // 
+            linkSeparatorSnipMenu.Name = "linkSeparatorSnipMenu";
+            linkSeparatorSnipMenu.Size = new Size(168, 6);
+            linkSeparatorSnipMenu.Visible = false;
+            // 
+            // openLinkSnipMenuItem
+            // 
+            openLinkSnipMenuItem.Image = Properties.Resources.WebInsertHyperlinkHS;
+            openLinkSnipMenuItem.Name = "openLinkSnipMenuItem";
+            openLinkSnipMenuItem.Size = new Size(171, 22);
+            openLinkSnipMenuItem.Text = "Im Browser öffnen";
+            openLinkSnipMenuItem.Click += OpenLinkSnipMenuItem_Click;
             // 
             // toolStrip
             // 
@@ -1008,20 +1024,6 @@
             // 
             timer.Interval = 200;
             timer.Tick += Timer_Tick;
-            // 
-            // linkSeparatorSnipMenu
-            // 
-            linkSeparatorSnipMenu.Name = "linkSeparatorSnipMenu";
-            linkSeparatorSnipMenu.Size = new Size(177, 6);
-            linkSeparatorSnipMenu.Visible = false;
-            // 
-            // openLinkSnipMenuItem
-            // 
-            openLinkSnipMenuItem.Image = Properties.Resources.WebInsertHyperlinkHS;
-            openLinkSnipMenuItem.Name = "openLinkSnipMenuItem";
-            openLinkSnipMenuItem.Size = new Size(180, 22);
-            openLinkSnipMenuItem.Text = "Im Browser öffnen";
-            openLinkSnipMenuItem.Click += OpenLinkSnipMenuItem_Click;
             // 
             // FrmClipMenu
             // 

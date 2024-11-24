@@ -449,6 +449,23 @@ namespace ClipMenu
             catch { }
         }
 
+        private void TabControl_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            char keyChar = e.KeyChar;
+            if (tabControl.SelectedIndex == 1 && tabControl.Focused && char.IsLetterOrDigit(keyChar))
+            {
+                snippetSearchBox.Text += keyChar.ToString();
+                snippetSearchBox.Select(snippetSearchBox.Text.Length, 0);
+                snippetSearchBox.Focus();
+            }
+            else if (tabControl.SelectedIndex == 0 && tabControl.Focused && char.IsLetterOrDigit(keyChar))
+            {
+                tbSearch.Text += keyChar.ToString();
+                tbSearch.Select(tbSearch.Text.Length, 0);
+                tbSearch.Focus();
+            }
+        }
+
         private void TabControl_SelectedIndexChanged(object sender, EventArgs e)
         {
             try
@@ -684,6 +701,17 @@ namespace ClipMenu
         private void TreeView_NodeMouseDoubleClick(object sender, TreeNodeMouseClickEventArgs e)
         {
             if (e.Node.Parent != null) { SendSnippet(e.Node.Text); }
+        }
+
+        private void TreeView_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            char keyChar = e.KeyChar;
+            if (char.IsLetterOrDigit(keyChar))
+            {
+                snippetSearchBox.Text += keyChar.ToString();
+                snippetSearchBox.Select(snippetSearchBox.Text.Length, 0); // Cursor ans Ende
+                snippetSearchBox.Focus();
+            }
         }
 
         private void TreeView_KeyDown(object sender, KeyEventArgs e)
@@ -1115,7 +1143,8 @@ namespace ClipMenu
                 }
             }
             else if (m.Msg == NativeMethods.WM_CLIPEDIT_FSZ) { fontClipEdit = ((string[])fontClipEdit.Split(','))[0] + ", " + m.WParam.ToInt32() + "pt"; }
-            else if (m.Msg == NativeMethods.WM_CLIPEDIT_STY) { 
+            else if (m.Msg == NativeMethods.WM_CLIPEDIT_STY)
+            {
                 string style = "style=";
                 switch (m.WParam.ToInt32())
                 {
@@ -1941,5 +1970,6 @@ namespace ClipMenu
             }
             catch (Exception ex) when (ex is Win32Exception || ex is InvalidOperationException) { Utilities.ErrorMsgTaskDlg(Handle, ex.Message); }
         }
+
     }
 }
