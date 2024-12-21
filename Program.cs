@@ -6,7 +6,7 @@ namespace ClipMenu
         ///  The main entry point for the application.
         /// </summary>
         [STAThread]
-        static void Main()
+        private static void Main()
         {
             using Mutex singleMutex = new(true, "{9A19103F-16F7-4668-BE54-9A1E7A4F7556}", out bool isNewInstance);
             if (isNewInstance)

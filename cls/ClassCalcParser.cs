@@ -1,19 +1,18 @@
 ﻿/* https://www.codeproject.com/Articles/21137/Inside-the-Mathematical-Expressions-Evaluator */
 using System.Text;
 using System.Text.RegularExpressions;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace ClipMenu
 {
     public partial class CalcClass
     {
-        Stack<double> operands;
-        Stack<string> operators;
-        string token;
-        int tokenPos;
-        string expression;
+        private Stack<double> operands;
+        private Stack<string> operators;
+        private string token;
+        private int tokenPos;
+        private string expression;
 
-        public string TokenString { get { return expression; } }
+        public string TokenString => expression;
 
         public CalcClass() { Reset(); }
 
@@ -157,13 +156,11 @@ namespace ClipMenu
         }
     }
 
-    public class CalculateException : Exception
+    public class CalculateException(string message, int position) : Exception(message)
     {
-        int position;
+        private readonly int position = position;
 
-        public CalculateException(string message, int position) : base(message) { this.position = position; } // "Syntaxfehler\r\n" + ..." + position.ToString() ...
-
-        public int TokenPosition { get { return position; } }
+        public int TokenPosition => position;
     }
     internal static class Token
     {
@@ -191,6 +188,6 @@ namespace ClipMenu
 
         public static string ToString(string op) { return op switch { End => "END", _ => op.ToString(), }; }
 
-        static bool Contains(string token, string[] array) { return Array.IndexOf(array, token) != -1; }
+        private static bool Contains(string token, string[] array) { return Array.IndexOf(array, token) != -1; }
     }
 }

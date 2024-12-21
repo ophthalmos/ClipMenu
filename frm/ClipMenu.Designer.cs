@@ -29,19 +29,19 @@
         private void InitializeComponent()
         {
             components = new System.ComponentModel.Container();
-            TreeNode treeNode1 = new TreeNode("1.3.");
-            TreeNode treeNode2 = new TreeNode("1.3.24");
-            TreeNode treeNode3 = new TreeNode("01.03.24");
-            TreeNode treeNode4 = new TreeNode("1.3.2024");
-            TreeNode treeNode5 = new TreeNode("01.03.2024");
-            TreeNode treeNode6 = new TreeNode("1. März 2024");
-            TreeNode treeNode7 = new TreeNode("Sonntag, den 3. März 2024");
-            TreeNode treeNode8 = new TreeNode("Daten", new TreeNode[] { treeNode1, treeNode2, treeNode3, treeNode4, treeNode5, treeNode6, treeNode7 });
-            TreeNode treeNode9 = new TreeNode("Viele Grüße");
-            TreeNode treeNode10 = new TreeNode("Texte", new TreeNode[] { treeNode9 });
-            TreeNode treeNode11 = new TreeNode("😊");
-            TreeNode treeNode12 = new TreeNode("Zeichen", new TreeNode[] { treeNode11 });
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FrmClipMenu));
+            var treeNode1 = new TreeNode("1.3.");
+            var treeNode2 = new TreeNode("1.3.24");
+            var treeNode3 = new TreeNode("01.03.24");
+            var treeNode4 = new TreeNode("1.3.2024");
+            var treeNode5 = new TreeNode("01.03.2024");
+            var treeNode6 = new TreeNode("1. März 2024");
+            var treeNode7 = new TreeNode("Sonntag, den 3. März 2024");
+            var treeNode8 = new TreeNode("Daten", new TreeNode[] { treeNode1, treeNode2, treeNode3, treeNode4, treeNode5, treeNode6, treeNode7 });
+            var treeNode9 = new TreeNode("Viele Grüße");
+            var treeNode10 = new TreeNode("Texte", new TreeNode[] { treeNode9 });
+            var treeNode11 = new TreeNode("😊");
+            var treeNode12 = new TreeNode("Zeichen", new TreeNode[] { treeNode11 });
+            var resources = new System.ComponentModel.ComponentResourceManager(typeof(FrmClipMenu));
             listBox = new ListBox();
             contextMenuStrip = new ContextMenuStrip(components);
             tsConvertSubMenu = new ToolStripMenuItem();

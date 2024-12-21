@@ -399,7 +399,7 @@
             btnStdPower.TabIndex = 15;
             btnStdPower.Text = "⋀";
             btnStdPower.UseVisualStyleBackColor = true;
-            btnStdPower.Click += btnStdPower_Click;
+            btnStdPower.Click += BtnStdPower_Click;
             // 
             // labelTrackbar
             // 

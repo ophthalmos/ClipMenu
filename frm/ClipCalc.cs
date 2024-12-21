@@ -5,8 +5,8 @@ namespace ClipMenu
 {
     public partial class FrmClipCalc : Form
     {
-        public string Result { get { return tbDisplay.Text; } }
-        public int DecPlaces { get { return trackBar.Value; } }
+        public string Result => tbDisplay.Text;
+        public int DecPlaces => trackBar.Value;
 
         private bool resultIsDisplayed = false; // wird benötigt um das Runden von Ausdrücken zu verhindern
         private string prevCalcString = "";
@@ -27,25 +27,79 @@ namespace ClipMenu
             NativeMethods.SendMessage(tbDisplay.Handle, NativeMethods.EM_SETMARGINS, NativeMethods.EC_LEFTMARGIN, 65536 + 3);
         }
 
-        private void FrmClipCalc_Shown(object sender, EventArgs e) { Activate(); }
+        private void FrmClipCalc_Shown(object sender, EventArgs e)
+        {
+            Activate();
+        }
 
-        private void BtnStd0_Click(object sender, EventArgs e) { AddToDisplay("0"); }
-        private void BtnStd1_Click(object sender, EventArgs e) { AddToDisplay("1"); }
-        private void BtnStd2_Click(object sender, EventArgs e) { AddToDisplay("2"); }
-        private void BtnStd3_Click(object sender, EventArgs e) { AddToDisplay("3"); }
-        private void BtnStd4_Click(object sender, EventArgs e) { AddToDisplay("4"); }
-        private void BtnStd5_Click(object sender, EventArgs e) { AddToDisplay("5"); }
-        private void BtnStd6_Click(object sender, EventArgs e) { AddToDisplay("6"); }
-        private void BtnStd7_Click(object sender, EventArgs e) { AddToDisplay("7"); }
-        private void BtnStd8_Click(object sender, EventArgs e) { AddToDisplay("8"); }
-        private void BtnStd9_Click(object sender, EventArgs e) { AddToDisplay("9"); }
-        private void BtnStdComma_Click(object sender, EventArgs e) { AddToDisplay(","); }
-        private void BtnStdPlus_Click(object sender, EventArgs e) { AddToDisplay("+"); }
-        private void BtnStdMinus_Click(object sender, EventArgs e) { AddToDisplay("-"); }
-        private void BtnStdMultiply_Click(object sender, EventArgs e) { AddToDisplay("*"); }
-        private void BtnStdSlash_Click(object sender, EventArgs e) { AddToDisplay("/"); }
-        private void btnStdPower_Click(object sender, EventArgs e) { AddToDisplay("^"); }
-        private void BtnStdCalc_Click(object sender, EventArgs e) { CalcRechner(); }
+        private void BtnStd0_Click(object sender, EventArgs e)
+        {
+            AddToDisplay("0");
+        }
+        private void BtnStd1_Click(object sender, EventArgs e)
+        {
+            AddToDisplay("1");
+        }
+        private void BtnStd2_Click(object sender, EventArgs e)
+        {
+            AddToDisplay("2");
+        }
+        private void BtnStd3_Click(object sender, EventArgs e)
+        {
+            AddToDisplay("3");
+        }
+        private void BtnStd4_Click(object sender, EventArgs e)
+        {
+            AddToDisplay("4");
+        }
+        private void BtnStd5_Click(object sender, EventArgs e)
+        {
+            AddToDisplay("5");
+        }
+        private void BtnStd6_Click(object sender, EventArgs e)
+        {
+            AddToDisplay("6");
+        }
+        private void BtnStd7_Click(object sender, EventArgs e)
+        {
+            AddToDisplay("7");
+        }
+        private void BtnStd8_Click(object sender, EventArgs e)
+        {
+            AddToDisplay("8");
+        }
+        private void BtnStd9_Click(object sender, EventArgs e)
+        {
+            AddToDisplay("9");
+        }
+        private void BtnStdComma_Click(object sender, EventArgs e)
+        {
+            AddToDisplay(",");
+        }
+        private void BtnStdPlus_Click(object sender, EventArgs e)
+        {
+            AddToDisplay("+");
+        }
+        private void BtnStdMinus_Click(object sender, EventArgs e)
+        {
+            AddToDisplay("-");
+        }
+        private void BtnStdMultiply_Click(object sender, EventArgs e)
+        {
+            AddToDisplay("*");
+        }
+        private void BtnStdSlash_Click(object sender, EventArgs e)
+        {
+            AddToDisplay("/");
+        }
+        private void BtnStdPower_Click(object sender, EventArgs e)
+        {
+            AddToDisplay("^");
+        }
+        private void BtnStdCalc_Click(object sender, EventArgs e)
+        {
+            CalcRechner();
+        }
 
         private void BtnStdConvert_Click(object sender, EventArgs e)
         {
@@ -54,7 +108,7 @@ namespace ClipMenu
             if (endNumberLen > 0)
             {
                 int totalLen = trimDisplay.Length; bool hasBracket = false; string endbracket = ")";
-                string endNumberValue = Regex.Replace(trimDisplay.Substring(totalLen - endNumberLen), @"\s+", "");
+                string endNumberValue = Regex.Replace(trimDisplay[(totalLen - endNumberLen)..], @"\s+", "");
                 //string endNumberValue = trimDisplay.Substring(totalLen - endNumberLen);
                 if (endNumberValue.EndsWith(endbracket))
                 {
@@ -62,9 +116,8 @@ namespace ClipMenu
                     endNumberValue = endNumberValue.Remove(endNumberValue.Length - 1);
                 }
                 endNumberValue = endNumberValue.Replace('.', ','); // muss nach Math.PI und Math.E stehen!
-                double.TryParse(endNumberValue, out double dblText);
-                if (dblText != 0) { endNumberValue = (dblText * -1).ToString(); }
-                tbDisplay.Text = trimDisplay.Substring(0, totalLen - endNumberLen) + endNumberValue + (hasBracket ? endbracket : "");
+                if (double.TryParse(endNumberValue, out double dblText) && dblText != 0) { endNumberValue = (dblText * -1).ToString(); }
+                tbDisplay.Text = trimDisplay[..(totalLen - endNumberLen)] + endNumberValue + (hasBracket ? endbracket : "");
             }
             tbDisplay.Focus(); // sonst hat möglicherweise auslösende Button [+/-] noch den Fokus
             tbDisplay.Select(tbDisplay.Text.Length, 0); // Cursor am Ende positionieren; sonst wird gesamter Inhalt markiert
@@ -100,7 +153,7 @@ namespace ClipMenu
             }
         }
 
-        private void AddToDisplay(String btnValue)
+        private void AddToDisplay(string btnValue)
         {
             tbDisplay.AppendText(btnValue);
             resultIsDisplayed = false;
@@ -132,7 +185,7 @@ namespace ClipMenu
                 if (ex.TokenPosition >= 0)
                 {
                     int lenStr = calcInstance.TokenString.Length; // abschließendes Semikolon entfernen
-                    tbDisplay.Text = calcInstance.TokenString.Substring(0, lenStr > 0 ? lenStr - 1 : 0);
+                    tbDisplay.Text = calcInstance.TokenString[..(lenStr > 0 ? lenStr - 1 : 0)];
                     tbDisplay.SelectionStart = ex.TokenPosition;
                 }
             }

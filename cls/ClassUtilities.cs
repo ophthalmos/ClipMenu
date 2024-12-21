@@ -56,7 +56,7 @@ namespace ClipMenu
 
         internal static void ErrorMsgTaskDlg(IntPtr hwnd, string message, TaskDialogIcon taskDialogIcon = null)
         {
-            taskDialogIcon = taskDialogIcon ?? TaskDialogIcon.Error;
+            taskDialogIcon ??= TaskDialogIcon.Error;
             TaskDialog.ShowDialog(hwnd, new TaskDialogPage() { Caption = Application.ProductName, SizeToContent = true, Text = message, Icon = taskDialogIcon, AllowCancel = true, Buttons = { TaskDialogButton.OK } });
         }
 
@@ -91,7 +91,10 @@ namespace ClipMenu
             return newTable;
         }
 
-        internal static string MedistarRefWert(double zahl) { return ((zahl >= 0 ? "+" : "-") + string.Format("{0,5:F2}", Math.Abs(zahl))).Replace(",", "."); }
+        internal static string MedistarRefWert(double zahl)
+        {
+            return ((zahl >= 0 ? "+" : "-") + string.Format("{0,5:F2}", Math.Abs(zahl))).Replace(",", ".");
+        }
 
         internal static string LimitedSubstr(string text, int maxLength)
         {
@@ -248,7 +251,10 @@ namespace ClipMenu
             return count == 0 ? string.Empty : count == 1 ? "Ein Eintrag" : $"{count} Einträge";
         }
 
-        internal static int GetIntFromBools(bool foo, bool bar) { return ((foo ? 1 : 0) << 1) | (bar ? 1 : 0); } // 0, 1: Italic, 2: Bold, 3: BoldItalic
+        internal static int GetIntFromBools(bool foo, bool bar)
+        {
+            return ((foo ? 1 : 0) << 1) | (bar ? 1 : 0);
+        } // 0, 1: Italic, 2: Bold, 3: BoldItalic
 
         internal static bool IsInFontCollection(string fontName)
         {
@@ -282,7 +288,10 @@ namespace ClipMenu
             return !typeof(DataFormats).GetFields(BindingFlags.Public | BindingFlags.Static).Select(f => f.Name).Any(Clipboard.ContainsData);
         }
 
-        internal static bool MaybePassword(string text) { return new Regex(@"^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*\W)(?!.* ).{8,18}$").IsMatch(text); }
+        internal static bool MaybePassword(string text)
+        {
+            return new Regex(@"^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*\W)(?!.* ).{8,18}$").IsMatch(text);
+        }
         /* Password must contain one digit, one lowercase, one uppercase letter, one special character, no space, and it must be 8-18 characters long. */
 
         internal static bool SetClipboardText(string text)
@@ -318,14 +327,17 @@ namespace ClipMenu
         public static bool IsInnoSetupValid(string assemblyLocation)
         {
             RegistryKey key = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\ClipMenu_is1");
-            if (key == null) return false;
+            if (key == null) { return false; }
             string value = (string)key.GetValue("UninstallString");
-            if (value == null) return false;
+            if (value == null)            {                return false;            }
             else if (Debugger.IsAttached) { return true; } // run by Visual Studio
             else { return assemblyLocation.Equals(RemoveFromEnd(value.Trim('"'), "\\unins000.exe")); } // "C:\Program Files\ClipMenu\unins000.exe"
         }
 
-        private static string RemoveFromEnd(string str, string toRemove) { return str.EndsWith(toRemove) ? str[..^toRemove.Length] : str; }
+        private static string RemoveFromEnd(string str, string toRemove)
+        {
+            return str.EndsWith(toRemove) ? str[..^toRemove.Length] : str;
+        }
 
         internal static string Truncate(string text, int maxLength = 40, string truncationSuffix = "…")
         {
@@ -432,7 +444,10 @@ namespace ClipMenu
         //    }
         //}
 
-        public static List<string> SearchHistory { get; set; }
+        public static List<string> SearchHistory
+        {
+            get; set;
+        }
 
         // Statische Klasse zum Verwalten des Zustands von Form2 // public static class FormManager // {
         private static bool clipCalcIsOpen = false;
@@ -440,13 +455,25 @@ namespace ClipMenu
 
         public static bool IsCalcOpen
         {
-            get { return clipCalcIsOpen; }
-            set { clipCalcIsOpen = value; }
+            get
+            {
+                return clipCalcIsOpen;
+            }
+            set
+            {
+                clipCalcIsOpen = value;
+            }
         }
         public static bool IsEditOpen
         {
-            get { return clipEditIsOpen; }
-            set { clipEditIsOpen = value; }
+            get
+            {
+                return clipEditIsOpen;
+            }
+            set
+            {
+                clipEditIsOpen = value;
+            }
         }
     }
 }

@@ -1,12 +1,13 @@
-﻿using System.Drawing.Text;
+﻿using System.Drawing.Printing;
+using System.Drawing.Text;
+using System.Runtime.ConstrainedExecution;
 using System.Text.RegularExpressions;
-using System.Windows.Forms;
 
 namespace ClipMenu
 {
     public partial class FrmClipEdit : Form
     {
-        public TextBox ClipEditTextBox { get { return textBox; } }
+        public TextBox ClipEditTextBox => textBox;
 
         private int searchStart = 0;
         private string searchString;
@@ -20,6 +21,8 @@ namespace ClipMenu
             InitializeComponent();
             txtboxText = Clipboard.ContainsText() ? clipText : "";
             if (!string.IsNullOrEmpty(txtboxText)) { backgroundWorker.RunWorkerAsync(); }
+
+            //MessageBox.Show(medistarRef.ToString());
 
             if (medistarRef)
             {
@@ -143,6 +146,11 @@ namespace ClipMenu
                         OpenToolStripMenuItem_Click(null, null);
                         return true;
                     }
+                case Keys.P | Keys.Control:
+                    {
+                        PrintToolStripMenuItem_Click(null, null);
+                        return true;
+                    }
                 case Keys.Z | Keys.Control:
                     {
                         UndoToolStripMenuItem_Click(null, null);
@@ -264,6 +272,41 @@ namespace ClipMenu
         {
             deleteAllToolStripMenuItem.Enabled = sendToolStripMenuItem.Enabled = textBox.Text.Length > 0;
             searchStart = textBox.SelectionStart;
+            //StatusLabelUpdate();
+
+            //toolStripStatusLabel1.Text = textBox.SelectionStart.ToString();
+            //string line = (textBox.GetLineFromCharIndex(textBox.TextLength) + 1).ToString();
+
+            //toolStripStatusLabel1.Text = (textBox.GetLineFromCharIndex(textBox.SelectionStart) + 1) + ":" + (textBox.SelectionStart - textBox.GetFirstCharIndexOfCurrentLine() + 1).ToString();
+
+        }
+
+        private void StatusLabelUpdate()
+        {
+            searchStart = textBox.SelectionStart;
+            int selLen = textBox.SelectionLength;
+            toolStripStatusLabel1.Text = selLen > 0 ? " " + selLen + " / " + textBox.Text.Length : " " + (textBox.GetLineFromCharIndex(searchStart) + 1).ToString() + " : " + (searchStart - textBox.GetFirstCharIndexOfCurrentLine() + 1).ToString();
+        }
+
+        private void TextBox_KeyUp(object sender, KeyEventArgs e)
+        {
+            StatusLabelUpdate();
+            //searchStart = textBox.SelectionStart;
+            //int selLen = textBox.SelectionLength;
+            //toolStripStatusLabel1.Text = selLen > 0 ? selLen.ToString() : textBox.GetLineFromCharIndex(searchStart) + 1 + ":" + (searchStart - textBox.GetFirstCharIndexOfCurrentLine() + 1).ToString();
+        }
+
+        private void TextBox_MouseUp(object sender, MouseEventArgs e)
+        {
+            StatusLabelUpdate();
+        }
+
+        private void TextBox_MouseClick(object sender, MouseEventArgs e)
+        {
+            //StatusLabelUpdate();
+            //searchStart = textBox.SelectionStart;
+            //int selLen = textBox.SelectionLength;
+            //toolStripStatusLabel1.Text = selLen > 0 ? selLen.ToString() : textBox.GetLineFromCharIndex(searchStart) + 1 + ":" + (searchStart - textBox.GetFirstCharIndexOfCurrentLine() + 1).ToString();
         }
 
         private void WordwrapToolStripMenuItem_Click(object sender, EventArgs e)
@@ -307,11 +350,9 @@ namespace ClipMenu
                 textBox.SelectionLength = success ? searchString.Length : 0;
                 textBox.Select();
                 textBox.ScrollToCaret();
+                StatusLabelUpdate();
             }
         }
-
-        private void TextBox_KeyUp(object sender, KeyEventArgs e) { searchStart = textBox.SelectionStart; }
-        private void TextBox_MouseClick(object sender, MouseEventArgs e) { searchStart = textBox.SelectionStart; }
 
         private void FontDialogToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -343,5 +384,34 @@ namespace ClipMenu
                 catch (Exception ex) { MessageBox.Show("Fehler beim Laden der Datei: " + ex.Message); }
             }
         }
+
+        private void PrintDocument_PrintPage(object sender, System.Drawing.Printing.PrintPageEventArgs e)
+        {
+            Graphics g = e.Graphics; // Ersetzen Sie e.Graphics durch Ihren Graphics-Objekt
+            RectangleF printableArea = e.PageSettings.PrintableArea;
+            RectangleF realPrintableArea = new(
+                e.PageSettings.Landscape ? printableArea.Y : printableArea.X,
+                e.PageSettings.Landscape ? printableArea.X : printableArea.Y,
+                e.PageSettings.Landscape ? printableArea.Height : printableArea.Width,
+                e.PageSettings.Landscape ? printableArea.Width : printableArea.Height
+            );
+            if (g.MeasureString(textBox.Text, textBox.Font).Width <= realPrintableArea.Width)
+            { //Zeichnet die angegebene Textzeichenfolge an der angegebenen Position mit dem angegebenen Brush und Font-Objekten.
+                g.DrawString(textBox.Text, textBox.Font, Brushes.Black, 0, 0); // new Font("Segoe UI", 10, FontStyle.Regular)
+            }
+            else
+            {
+                Utilities.ErrorMsgTaskDlg(Handle, "Der Text passt horizontal nicht aufs Papier.\nFügen Sie in langen Zeilen Umbrüche ein." +
+                    "\nVersuchen Sie danach erneut zu drucken.", TaskDialogIcon.Information);
+                e.Cancel = true;
+            }
+        }
+
+        private void PrintToolStripMenuItem_Click(object sender, EventArgs e)
+        { //Margins: left, right, top, and bottom; hundredths of an inch
+            printDocument.PrinterSettings.DefaultPageSettings.Margins = new Margins(25, 20, 100, 50); // s. OriginAtMargins
+            if (printDialog.ShowDialog() == DialogResult.OK) { printDocument.Print(); }
+        }
+
     }
 }

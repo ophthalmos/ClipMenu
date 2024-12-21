@@ -5,7 +5,7 @@ namespace ClipMenu
 {
     public partial class ImageView : Form
     {
-        public string ImagePath { get { return imagePath; } }
+        public string ImagePath => imagePath;
 
         private string imagePath = string.Empty;
 

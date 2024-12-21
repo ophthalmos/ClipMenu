@@ -2,7 +2,7 @@
 {
     public partial class InputBox : Form
     {
-        public TextBox InputTextBox { get { return textBox; } }
+        public TextBox InputTextBox => textBox;
 
         public InputBox(string title, string prompt, string defaultValue = "")
         {

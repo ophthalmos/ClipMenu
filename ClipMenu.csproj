@@ -13,8 +13,10 @@
     <NeutralLanguage>de</NeutralLanguage>
     <FileVersion>1</FileVersion>
     <SourceRevisionId>build$([System.DateTime]::UtcNow.ToString("yyyyMMddHHmmss"))</SourceRevisionId>
-    <AssemblyVersion>1.0.2.0</AssemblyVersion>
+    <AssemblyVersion>1.0.2.1</AssemblyVersion>
     <Description>Better Clipboard Tool</Description>
+    <WarningLevel>3</WarningLevel>
+    <NoWarn>IDE0007,IDE0027,IDE0161,SYSLIB1045,SYSLIB1054</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

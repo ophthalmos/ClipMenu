@@ -1,5 +1,4 @@
-﻿using System.Globalization;
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 using System.Text;
 
 namespace ClipMenu
@@ -393,7 +392,7 @@ namespace ClipMenu
             return GetClassName(hwnd, lpClassName, lpClassName.Capacity) != 0 && string.CompareOrdinal(lpClassName.ToString(), "Shell_TrayWnd") == 0;
         }
 
-        internal static void WinEventProc(IntPtr hWinEventHook, uint eventType, IntPtr hwnd, int idObject, int idChild, uint dwEventThread, uint dwmsEventTime)
+        internal static void WinEventProc(IntPtr _1, uint eventType, IntPtr hwnd, int idObject, int idChild, uint _2, uint _3)
         { //https://devblogs.microsoft.com/oldnewthing/20130930-00/?p=3083 // if (hwnd && idObject == OBJID_WINDOW && idChild == CHILDID_SELF && event == EVENT_SYSTEM_FOREGROUND)
             List<IntPtr> formHandles = [];
             formHandles.AddRange(from Form form in Application.OpenForms where form.Name != "FrmClipEdit" select form.Handle);

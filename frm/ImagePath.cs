@@ -2,7 +2,7 @@
 {
     public partial class ImagePath : Form
     {
-        public string Result { get { return textBox.Text; } }
+        public string Result => textBox.Text;
 
         public ImagePath(string imagePath)
         {
